@@ -1,20 +1,18 @@
-
-import './App.css';
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import BookTable from './components/BookTable'; // Sørg for, at stien matcher nøjagtigt
 
 function App() {
   return (
-    <div className="App">
+    <div className="App ff-container">
       <header className="App-header">
-        <p>BookBuddy Frontend!!!!</p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        <h1 className="text-4xl font-bold ff-text">BookBuddy Frontend</h1>
       </header>
+      <main>
+        <Routes>
+          <Route path="/" element={<BookTable />} /> {/* Definer ruten til BookTable */}
+        </Routes>
+      </main>
     </div>
   );
 }

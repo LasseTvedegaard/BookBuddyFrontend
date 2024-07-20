@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Dine custom styles */
+.ff-container {
+    @apply bg-ff_bg_continer_light dark:bg-ff_bg_continer_dark rounded-lg p-5 dark:text-white;
+}
+
+.ff-text {
+    @apply text-black dark:text-white;
+}
+
+.ff-input {
+  @apply bg-ff_background_light dark:bg-gray-800 border-0 rounded-md p-3 focus:outline-none;
+}
+
+.ff-input:focus:not(.dark) {
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5); 
+}
+
+.ff-input:focus.dark {
+  box-shadow: 0 0 0 3px rgba(253, 202, 64, 1); 
+}
+
+.ff-button {
+  @apply bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md p-3 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400;
+}
+
+.ff-table-row-odd {
+  @apply bg-gray-200 bg-opacity-75 dark:bg-ff_background_dark dark:bg-opacity-20;
+}
+
+.ff-table-row-even {
+  @apply bg-gray-50 dark:bg-gray-400 dark:bg-opacity-5;
+}
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  text-align: center;
+  padding: 3px 7px 3px 7px;
+  border-radius: 6px;
+  margin-left: 20px;
+  position: absolute;
+  z-index: 1;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}

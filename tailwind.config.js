@@ -1,21 +1,21 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-    content: ["./src/**/*.{js,jsx,ts,tsx}"],
-    // enable dark mode via class strategy
-    darkMode: "class",
+  content: ["./src/**/*.{js,jsx,ts,tsx}"],
+  // enable dark mode via class strategy
+  darkMode: "class",
 
-    theme: {
-      extend: {
-        colors: {
-            black: "#09090c",
-            darkGray: "#121212",
-            customYellow: "#e6d064",
-            customYellowDark: "#d4b254",
+  theme: {
+    extend: {
+      colors: {
+        black: "#09090c",
+        darkGray: "#121212",
+        customYellow: "#e6d064",
+        customYellowDark: "#d4b254",
 
-            ff_background_light: "#f0f2f5",
-            ff_background_dark: "#1F2933",
+        ff_background_light: "#f0f2f5",
+        ff_background_dark: "#1F2933",
 
-            ff_bg_continer_light: "#ffffff",
+        ff_bg_continer_light: "#ffffff",
         ff_bg_continer_dark: "#3E4C59",
 
         ff_bg_sidebar_light: "#ffffff",
@@ -42,11 +42,11 @@ module.exports = {
         darkBlue: "#000",
         darkGrayishBlue: "hsl(227, 12%, 61%)",
         veryDarkBlue: "hsl(233, 12%, 13%)",
-        },
       },
     },
-    plugins: [require("@tailwindcss/forms"),
-        // Add other plugins here as needed
-        ],
-  };
-  
+  },
+  plugins: [
+    require("@tailwindcss/forms"),
+    // Add other plugins here as needed
+  ],
+};
