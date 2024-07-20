@@ -52,7 +52,7 @@ function BookTable() {
             className="ml-2 px-4 py-2 rounded-md bg-customYellow text-ff_background_dark font-semibold hover:bg-customYellowDark"
             onClick={() => navigate("/add-book")}
           >
-            New
+            Add new book
           </button>
         </div>
       </div>

@@ -6,7 +6,7 @@ function App() {
   return (
     <div className="App ff-container">
       <header className="App-header">
-        <h1 className="text-4xl font-bold ff-text">BookBuddy Frontend</h1>
+        <h1 className="text-4xl font-bold ff-text">BookBuddy</h1>
       </header>
       <main>
         <Routes>
