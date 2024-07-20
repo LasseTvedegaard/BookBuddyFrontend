@@ -1,10 +1,14 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom"; // Sørg for, at dette er installeret
-import { FiMoreHorizontal } from "react-icons/fi"; // Sørg for, at dette er installeret
+import { useNavigate } from "react-router-dom";
+import { FiMoreHorizontal } from "react-icons/fi";
 import HttpClient from "../services/HttpClient";
 import { endpoints } from "../endpoints";
 
-const httpClient = new HttpClient(process.env.REACT_APP_API_URL);
+console.log("API URL:", process.env.REACT_APP_API_URL);
+
+const httpClient = HttpClient(process.env.REACT_APP_API_URL); // Kald funktionen korrekt
+
+console.log("API URL:", process.env.REACT_APP_API_URL);
 
 function BookTable() {
   const [books, setBooks] = useState([]);
@@ -96,38 +100,38 @@ function BookTable() {
           {books &&
             books.map((book) => (
               <tr
-                key={book.BookId}
+                key={book.bookId}
                 className="text-left hover:bg-slate-300 hover:bg-opacity-50 dark:hover:bg-opacity-10"
               >
                 <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
-                  {book.Title}
+                  {book.title}
                 </td>
                 <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
-                  {book.Author}
+                  {book.author}
                 </td>
                 <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
-                  {book.Genre?.Name}
+                  {book.genre?.name}
                 </td>
                 <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
-                  {book.NoOfPages}
+                  {book.noOfPages}
                 </td>
                 <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
-                  {book.BookType}
+                  {book.bookType}
                 </td>
                 <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
-                  {book.IsbnNo}
+                  {book.isbnNo}
                 </td>
                 <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
-                  {book.Location?.Name}
+                  {book.location?.name}
                 </td>
                 <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
-                  {book.Status}
+                  {book.status}
                 </td>
                 <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
-                  <img src={book.ImageURL} alt={book.Title} className="h-10 w-10"/>
+                  <img src={book.imageURL} alt={book.title} className="h-10 w-10"/>
                 </td>
                 <td className="py-4 mr-4 items-center justify-center float-right">
-                  <button onClick={() => handleDetailsClick(book.BookId)}>
+                  <button onClick={() => handleDetailsClick(book.bookId)}>
                     <FiMoreHorizontal className="h-5 w-5 text-black dark:text-white" />
                   </button>
                 </td>
