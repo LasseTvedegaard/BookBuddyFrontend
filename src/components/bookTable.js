@@ -4,11 +4,7 @@ import { FiMoreHorizontal } from "react-icons/fi";
 import HttpClient from "../services/HttpClient";
 import { endpoints } from "../endpoints";
 
-console.log("API URL:", process.env.REACT_APP_API_URL);
-
 const httpClient = HttpClient(process.env.REACT_APP_API_URL); // Kald funktionen korrekt
-
-console.log("API URL:", process.env.REACT_APP_API_URL);
 
 function BookTable() {
   const [books, setBooks] = useState([]);
