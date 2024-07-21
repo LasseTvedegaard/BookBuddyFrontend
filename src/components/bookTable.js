@@ -8,6 +8,8 @@ const httpClient = HttpClient(process.env.REACT_APP_API_URL); // Kald funktionen
 
 function BookTable() {
   const [books, setBooks] = useState([]);
+  const [genres, setGenres] = useState({});
+  const [locations, setLocations] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
 
@@ -21,9 +23,37 @@ function BookTable() {
     }
   }, [searchTerm]);
 
+  const fetchGenres = useCallback(async () => {
+    try {
+      const response = await httpClient.get(endpoints.genres);
+      const genreMap = response.reduce((acc, genre) => {
+        acc[genre.genreId] = genre.genreName;
+        return acc;
+      }, {});
+      setGenres(genreMap);
+    } catch (error) {
+      console.error("Error fetching genres:", error);
+    }
+  }, []);
+
+  const fetchLocations = useCallback(async () => {
+    try {
+      const response = await httpClient.get(endpoints.locations);
+      const locationMap = response.reduce((acc, location) => {
+        acc[location.locationId] = location.locationName;
+        return acc;
+      }, {});
+      setLocations(locationMap);
+    } catch (error) {
+      console.error("Error fetching locations:", error);
+    }
+  }, []);
+
   useEffect(() => {
     fetchBooks();
-  }, [fetchBooks]);
+    fetchGenres();
+    fetchLocations();
+  }, [fetchBooks, fetchGenres, fetchLocations]);
 
   const handleDetailsClick = (bookId) => {
     navigate(`/books/${bookId}`);
@@ -106,7 +136,7 @@ function BookTable() {
                   {book.author}
                 </td>
                 <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
-                  {book.genre?.name}
+                  {genres[book.genreId]}
                 </td>
                 <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
                   {book.noOfPages}
@@ -118,7 +148,7 @@ function BookTable() {
                   {book.isbnNo}
                 </td>
                 <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
-                  {book.location?.name}
+                  {locations[book.locationId]}
                 </td>
                 <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
                   {book.status}
