@@ -15,6 +15,7 @@ function BookTable() {
     const url = `${endpoints.books}?search=${searchTerm}`;
     try {
       const response = await httpClient.get(url);
+
       setBooks(response);
     } catch (error) {
       console.error("Error fetching books:", error);
