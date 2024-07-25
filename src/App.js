@@ -1,6 +1,6 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import BookTable from './components/bookTable'; // Sørg for, at stien matcher nøjagtigt
+import BookTable from './pages/bookTable'; // Sørg for, at stien matcher nøjagtigt
 import Dashboard from './pages/Dashboard'; // Opdater stien til Dashboard
 
 function App() {
