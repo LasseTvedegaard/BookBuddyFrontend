@@ -3,7 +3,10 @@ import { Routes, Route } from 'react-router-dom';
 import BookTable from './pages/bookTable'; // Sørg for, at stien matcher nøjagtigt
 import Dashboard from './pages/Dashboard'; // Opdater stien til Dashboard
 
+
 function App() {
+
+  
   return (
     <div className="App ff-container">
       <header className="App-header">
