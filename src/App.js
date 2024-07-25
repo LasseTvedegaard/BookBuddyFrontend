@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import BookTable from './components/bookTable'; // Sørg for, at stien matcher nøjagtigt
+import Dashboard from './pages/Dashboard'; // Opdater stien til Dashboard
 
 function App() {
   return (
@@ -10,7 +11,8 @@ function App() {
       </header>
       <main>
         <Routes>
-          <Route path="/" element={<BookTable />} /> {/* Definer ruten til BookTable */}
+          <Route path="/" element={<Dashboard />} /> {/* Hjemmesiden er Dashboard */}
+          <Route path="books" element={<BookTable />} /> {/* Books siden */}
         </Routes>
       </main>
     </div>
