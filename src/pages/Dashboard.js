@@ -8,7 +8,7 @@ function Dashboard() {
       <nav>
         <ul>
           <li>
-            <Link to="/books">Go to Books</Link>
+            <Link to="/books">All books</Link>
           </li>
         </ul>
       </nav>

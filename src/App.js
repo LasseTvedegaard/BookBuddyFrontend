@@ -1,24 +1,25 @@
+import { ColorModeContext, useMode } from './theme';
+import { CssBaseline, ThemeProvider } from '@mui/material';
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import BookTable from './pages/bookTable'; // Sørg for, at stien matcher nøjagtigt
 import Dashboard from './pages/Dashboard'; // Opdater stien til Dashboard
-
+import Topbar from './pages/global/Topbar';
 
 function App() {
+  const [theme, colorMode] = useMode();
 
-  
   return (
-    <div className="App ff-container">
-      <header className="App-header">
-        <h1 className="text-4xl font-bold ff-text">BookBuddy</h1>
-      </header>
-      <main>
-        <Routes>
-          <Route path="/" element={<Dashboard />} /> {/* Hjemmesiden er Dashboard */}
-          <Route path="books" element={<BookTable />} /> {/* Books siden */}
-        </Routes>
-      </main>
-    </div>
+    <ColorModeContext.Provider value={colorMode}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <div className="app">
+          <main className='content'>
+            <Topbar />
+          </main>
+        </div>
+      </ThemeProvider>
+    </ColorModeContext.Provider>
   );
 }
 
