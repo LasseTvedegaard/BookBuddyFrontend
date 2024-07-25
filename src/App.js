@@ -1,6 +1,6 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import BookTable from './components/BookTable'; // Sørg for, at stien matcher nøjagtigt
+import BookTable from './components/bookTable'; // Sørg for, at stien matcher nøjagtigt
 
 function App() {
   return (
