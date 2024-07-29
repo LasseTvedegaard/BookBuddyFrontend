@@ -1,5 +1,3 @@
-import { ColorModeContext, useMode } from './theme';
-import { CssBaseline, ThemeProvider } from '@mui/material';
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import BookTable from './pages/bookTable'; // Sørg for, at stien matcher nøjagtigt
@@ -10,16 +8,21 @@ function App() {
   const [theme, colorMode] = useMode();
 
   return (
-    <ColorModeContext.Provider value={colorMode}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <div className="app">
-          <main className='content'>
-            <Topbar />
-          </main>
-        </div>
-      </ThemeProvider>
-    </ColorModeContext.Provider>
+    <>
+      <ToastContainer theme={theme} position="bottom-right" newestOnTop />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              <Route element={<Layout />}>
+                <Route path="/" element={<ProtectedRoute />}>
+                  <Route index element={<Dashboard />} />
+                  <Route path="dashboard" element={<Dashboard />} />
+                  <Route path="books" element={<BookTable />} />
+                </Route>
+              </Route>
+            </Routes>
+          </BrowserRouter>
+    </>
   );
 }
 
