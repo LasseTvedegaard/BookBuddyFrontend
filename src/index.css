@@ -4,16 +4,15 @@
 
 body {
   font-family: 'Poppins', sans-serif;
-  /* other styles ... */
 }
 
 /* Your custom styles */
 .ff-container {
-    @apply bg-ff_bg_continer_light dark:bg-ff_bg_continer_dark rounded-lg p-5 dark:text-white;
+  @apply bg-ff_bg_continer_light dark:bg-ff_bg_continer_dark rounded-lg p-5 dark:text-white;
 }
 
 .ff-text {
-    @apply text-black dark:text-white;
+  @apply text-black dark:text-white;
 }
 
 .ff-input {
@@ -40,7 +39,6 @@ body {
   @apply bg-gray-50 dark:bg-gray-400 dark:bg-opacity-5;
 }
 
-
 .tooltip {
   position: relative;
   display: inline-block;
@@ -53,8 +51,6 @@ body {
   padding: 3px 7px 3px 7px;
   border-radius: 6px;
   margin-left: 20px;
- 
-  /* Position the tooltip text - see examples below! */
   position: absolute;
   z-index: 1;
 }
