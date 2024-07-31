@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useContext, useMemo } from "react";
+import Select from 'react-select';
 import HttpClient from "../../services/HttpClient";
-import { baseUrl } from "../../.env.development";
+import { ThemeContext } from "../Theme/ThemeContext";
+
+const baseUrl = process.env.REACT_APP_API_URL;
 
 export default function DropDownForm({
   endpoint = "",
@@ -66,7 +69,6 @@ export default function DropDownForm({
         if (Array.isArray(response.data)) {
           setData(response.data);
         } else if (typeof response.data === "object") {
-          // Convert object values into an array
           console.warn("Fetched data is not recognized", response.data.results);
           setData([]);
         }

@@ -1,13 +1,15 @@
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import HttpClient from "../../services/HttpClient";
-import { useEffect, useState } from "react";
 import DropDown from "../Book/DropDown";
-import { objectShallowCompare } from "@mui/x-data-grid/hooks/utils/useGridSelector";
 import { showLoadingToast, updateToast } from "../common/Toast";
+import { BsInfoSquareFill } from "react-icons/bs";
+import IconAndText from "../common/IconAndText"; // Sørg for at importere denne komponent
 
+const baseUrl = process.env.REACT_APP_API_URL;
 const httpClient = new HttpClient(baseUrl);
 
-const BookCreateFrom = () => {
+const BookCreateForm = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -26,7 +28,7 @@ const BookCreateFrom = () => {
     const [errors, setErrors] = useState({});
 
     const handleInputChange = (event) => {
-        const {name, value} = event.target;
+        const { name, value } = event.target;
         setFormData((prevData) => ({
             ...prevData,
             [name]: value,
@@ -79,7 +81,7 @@ const BookCreateFrom = () => {
         }
 
         if (!formData.image.trim()) {
-            Errors.image = "An image is required"
+            Errors.image = "An image is required.";
         }
 
         return Errors;
@@ -88,8 +90,8 @@ const BookCreateFrom = () => {
     const handleSubmit = async (event) => {
         event.preventDefault();
 
-        const  validationErrors = validateForm();
-        if (object.keys(validationErrors).length > 0) {
+        const validationErrors = validateForm();
+        if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
             return;
         }
@@ -97,18 +99,18 @@ const BookCreateFrom = () => {
         let toastId;
         try {
             toastId = showLoadingToast("Creating book...");
-            const respone = await httpClient.post("api/book/", formData);
-            console.log("response -->" + respone);
-            console.log("response.ok -->" + respone.ok);
-            if (respone.status === 201) {
+            const response = await httpClient.post("api/book/", formData);
+            console.log("response -->" + response);
+            console.log("response.ok -->" + response.ok);
+            if (response.status === 201) {
                 updateToast(toastId, "Book created successfully!", "success");
                 console.log("Book created successfully!");
                 navigate(
                     location?.state?.previousUrl ? location.state.previousUrl : "/books"
                 );
             } else {
-                updateToast(toastId, `Error creating book: ${error}`, "error");
-                console.log("Error creating case:", error);
+                updateToast(toastId, `Error creating book: ${response.statusText}`, "error");
+                console.log("Error creating book:", response.statusText);
             }
         } catch (error) {
             updateToast(toastId, `Error creating book: ${error}`, "error");
@@ -122,33 +124,35 @@ const BookCreateFrom = () => {
         <div className="w-full bg-white rounded-md dark:bg-ff_bg_continer_dark dark:text-white p-4">
             <form onSubmit={handleSubmit}>
                 <div className="flex flex-wrap">
-                    {/* Left Column */}
+                    {/* Venstre kolonne */}
                     <div className="w-full md:w-1/2 px-3 md:mb-6 md:pr-10">
-                    <IconAndText icon={BsInfoSquareFill} text="General" />
-                    { /* Title */}
-                    <div className="py-2">
-                        <label
-                            htmlFor="Title"
-                            className="flex justify-between items-center mb-2 text-sm font-medium ff-text"
-                        >
-                            Title
-                            {errors.title && (
-                                <p className="text-red-500 text-xs ml-auto">{errors.title}</p>
-                            )}
-                        </label>
-                        <input
-                        type="text"
-                        id="title"
-                        name="title"
-                        value={handleInputChange}
-                        className="ff-input w-full"
-                        placeholder="Book Title"
-                        />
-                    </div>
-                    
+                        <IconAndText icon={BsInfoSquareFill} text="General" />
+                        {/* Titel */}
+                        <div className="py-2">
+                            <label
+                                htmlFor="title"
+                                className="flex justify-between items-center mb-2 text-sm font-medium ff-text"
+                            >
+                                Title
+                                {errors.title && (
+                                    <p className="text-red-500 text-xs ml-auto">{errors.title}</p>
+                                )}
+                            </label>
+                            <input
+                                type="text"
+                                id="title"
+                                name="title"
+                                value={formData.title}
+                                onChange={handleInputChange}
+                                className="ff-input w-full"
+                                placeholder="Book Title"
+                            />
+                        </div>
                     </div>
                 </div>
             </form>
         </div>
     );
-}
+};
+
+export default BookCreateForm;
