@@ -38,7 +38,7 @@ function BookTable() {
             Books Overview
           </span>
           <p className="mt-1 text-sm font-normal text-gray-500 dark:text-gray-400">
-            A detailed list of books and their respective details.
+          A detailed list of all books in BookBuddy along with their respective details.
           </p>
         </div>
         <div className="mt-4 md:mt-0 flex flex-row">
