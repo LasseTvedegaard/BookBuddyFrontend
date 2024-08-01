@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import HttpClient from "../../services/HttpClient";
-import DropDown from "../Book/DropDown";
+import DropDown from "../Book/DropDown";  // Corrected import statement
 import { showLoadingToast, updateToast } from "../common/Toast";
-import { BsInfoSquareFill } from "react-icons/bs";
-import IconAndText from "../common/IconAndText"; // Sørg for at importere denne komponent
+import { BsInfoSquareFill, BsPeopleFill } from "react-icons/bs";
+import IconAndText from "../common/IconAndText";
 
 const baseUrl = process.env.REACT_APP_API_URL;
 const httpClient = new HttpClient(baseUrl);
@@ -48,6 +48,21 @@ const BookCreateForm = () => {
             location: selectedOption.value,
         }));
     };
+
+    const handleDropDownStatus = (selectedOption) => {
+        setFormData((prevState) => ({
+            ...prevState,
+            location: selectedOption.value,
+        }));
+    };
+
+    const handleDropDownType = (selectedOption) => {
+        setFormData((prevState) => ({
+            ...prevState,
+            location: selectedOption.value,
+        }));
+    };
+
 
     const validateForm = () => {
         const Errors = {};
@@ -124,10 +139,7 @@ const BookCreateForm = () => {
         <div className="w-full bg-white rounded-md dark:bg-ff_bg_continer_dark dark:text-white p-4">
             <form onSubmit={handleSubmit}>
                 <div className="flex flex-wrap">
-                    {/* Venstre kolonne */}
                     <div className="w-full md:w-1/2 px-3 md:mb-6 md:pr-10">
-                        <IconAndText icon={BsInfoSquareFill} text="General" />
-                        {/* Titel */}
                         <div className="py-2">
                             <label
                                 htmlFor="title"
@@ -148,8 +160,176 @@ const BookCreateForm = () => {
                                 placeholder="Book Title"
                             />
                         </div>
+                        <div className="py-2">
+                            <label
+                                htmlFor="author"
+                                className="flex justify-between items-center mb-2 text-sm font-medium ff-text"
+                            >
+                                Author
+                                {errors.author && (
+                                    <p className="text-red-500 text-xs ml-auto">{errors.author}</p>
+                                )}
+                            </label>
+                            <input
+                                type="text"
+                                id="author"
+                                name="author"
+                                value={formData.author}
+                                onChange={handleInputChange}
+                                className="ff-input w-full"
+                                placeholder="Author"
+                            />
+                        </div>
+                        <div className="py-2">
+                            <label
+                                htmlFor="genre"
+                                className="flex justify-between items-center mb-2 text-sm font-medium ff-text"
+                            >
+                                Genre
+                                {errors.genre && (
+                                    <p className="text-red-500 text-xs ml-auto">{errors.genre}</p>
+                                )}
+                            </label>
+                            <DropDown
+                                endpoint="api/genres"
+                                labelKey="name"
+                                valueKey="id"
+                                initialSelected=""
+                                onValueChange={handleDropDownGenre}
+                            />
+                        </div>
+                        <div className="py-2">
+                            <label
+                                htmlFor="pages"
+                                className="flex justify-between items-center mb-2 text-sm font-medium ff-text"
+                            >
+                                Number of pages
+                                {errors.pages && (
+                                    <p className="text-red-500 text-xs ml-auto">{errors.pages}</p>
+                                )}
+                            </label>
+                            <input
+                                type="text"
+                                id="pages"
+                                name="pages"
+                                value={formData.pages}
+                                onChange={handleInputChange}
+                                className="ff-input w-full"
+                                placeholder="Number of pages"
+                            />
+                        </div>
+                        
+                        <div className="py-2">
+                            <label
+                                htmlFor="genre"
+                                className="flex justify-between items-center mb-2 text-sm font-medium ff-text"
+                            >
+                                Type
+                                {errors.genre && (
+                                    <p className="text-red-500 text-xs ml-auto">{errors.genre}</p>
+                                )}
+                            </label>
+                            <DropDown
+                                endpoint="api/genres"
+                                labelKey="name"
+                                valueKey="id"
+                                initialSelected=""
+                                onValueChange={handleDropDownType}
+                            />
+                        </div>
+
+                    </div>
+                    {/* Right Column */}
+                    <div className="w-full md:w-1/2 px-3 mb-6 md:border-l border-gray-200 dark:border-ff_background_dark md:pl-10">
+                        {/* <IconAndText icon={BsPeopleFill} text="Stakeholders" /> */}
+                        
+                        <div className="py-2">
+                            <label
+                                htmlFor="isbn"
+                                className="flex justify-between items-center mb-2 text-sm font-medium ff-text"
+                            >
+                                ISBN
+                                {errors.isbn && (
+                                    <p className="text-red-500 text-xs ml-auto">{errors.isbn}</p>
+                                )}
+                            </label>
+                            <input
+                                type="text"
+                                id="isbn"
+                                name="isbn"
+                                value={formData.isbn}
+                                onChange={handleInputChange}
+                                className="ff-input w-full"
+                                placeholder="ISBN"
+                            />
+                        </div>
+
+                        <div className="py-2">
+                            <label
+                                htmlFor="genre"
+                                className="flex justify-between items-center mb-2 text-sm font-medium ff-text"
+                            >
+                                Location
+                                {errors.genre && (
+                                    <p className="text-red-500 text-xs ml-auto">{errors.genre}</p>
+                                )}
+                            </label>
+                            <DropDown
+                                endpoint="api/genres"
+                                labelKey="name"
+                                valueKey="id"
+                                initialSelected=""
+                                onValueChange={handleDropDownLocation}
+                            />
+                        </div>
+
+                        <div className="py-2">
+                            <label
+                                htmlFor="genre"
+                                className="flex justify-between items-center mb-2 text-sm font-medium ff-text"
+                            >
+                                Status
+                                {errors.genre && (
+                                    <p className="text-red-500 text-xs ml-auto">{errors.genre}</p>
+                                )}
+                            </label>
+                            <DropDown
+                                endpoint="api/genres"
+                                labelKey="name"
+                                valueKey="id"
+                                initialSelected=""
+                                onValueChange={handleDropDownStatus}
+                            />
+                        </div>
+
+                        <div className="py-2">
+                            <label
+                                htmlFor="image"
+                                className="flex justify-between items-center mb-2 text-sm font-medium ff-text"
+                            >
+                                Image
+                                {errors.image && (
+                                    <p className="text-red-500 text-xs ml-auto">{errors.image}</p>
+                                )}
+                            </label>
+                            <input
+                                type="text"
+                                id="image"
+                                name="image"
+                                value={formData.image}
+                                onChange={handleInputChange}
+                                className="ff-input w-full"
+                                placeholder="Image URL"
+                            />
+                        </div>
                     </div>
                 </div>
+                <button
+                    type="submit"
+                    className="text-white bg-blue-700 hover:bg-blue-800 rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center mt-4"
+                >
+                    Create new case
+                </button>
             </form>
         </div>
     );
