@@ -6,13 +6,13 @@ import { ThemeContext } from "../Theme/ThemeContext";
 const baseUrl = process.env.REACT_APP_API_URL;
 
 export default function DropDownForm({
+  id,
   endpoint = "",
   options = [],
   labelKey = "label",
   valueKey = "value",
-  initialSelected = "",
-  onValueChange,
-  id, // Accept the id prop here
+  initialSelected = null,
+  onValueChange
 }) {
   const [data, setData] = useState([]);
   const [selected, setSelected] = useState(initialSelected);
@@ -64,47 +64,45 @@ export default function DropDownForm({
 
   useEffect(() => {
     if (options.length > 0) {
-      setData(options);
+        setData(options);
     } else if (endpoint) {
-      console.log(`Fetching data from endpoint: ${endpoint}`);
-      httpClient
-        .get(endpoint)
-        .then((response) => {
-          console.log("Fetched data:", response); // Log the entire response
-          if (response.data) {
-            console.log("Fetched data:", response.data); // Log the data property of the response
-            if (Array.isArray(response.data)) {
-              const mappedData = response.data.map(item => ({
-                value: item[valueKey],
-                label: item[labelKey]
-              }));
-              setData(mappedData);
-              console.log("Mapped data for Select component:", mappedData);
-            } else {
-              console.warn("Response data is not an array", response.data);
-            }
-          } else {
-            console.warn("Response data is missing", response);
-          }
-        })
-        .catch((error) => {
-          console.error("There was an error fetching the data", error);
-        });
+        console.log(`Fetching data from endpoint: ${endpoint}`);
+        httpClient
+            .get(endpoint)
+            .then((response) => {
+                console.log("Fetched response:", response); // Log the entire response
+                if (response.data && Array.isArray(response.data)) {
+                    const responseData = response.data;
+                    const mappedData = responseData.map(item => ({
+                        value: item[valueKey],
+                        label: item[labelKey]
+                    }));
+                    setData(mappedData);
+                    console.log("Mapped data for Select component:", mappedData);
+                } else {
+                    console.warn("Response data is not an array or is missing", response.data);
+                }
+            })
+            .catch((error) => {
+                console.error("There was an error fetching the data", error);
+            });
     }
-  }, [endpoint, httpClient, options, valueKey, labelKey]);
+}, [endpoint, httpClient, options, valueKey, labelKey]);
 
   const handleChange = (selectedOption) => {
     setSelected(selectedOption);
-    onValueChange && onValueChange(selectedOption);
+    if (onValueChange) {
+      onValueChange(selectedOption);
+    }
   };
 
   return (
     <Select
+      id={id}
       value={selected}
       onChange={handleChange}
       options={data}
       styles={customStyles}
-      inputId={id} // Use inputId prop for react-select
     />
   );
 }

@@ -16,12 +16,12 @@ const BookCreateForm = () => {
   const [formData, setFormData] = useState({
     title: "",
     author: "",
-    genre: "",
+    genre: null,  // Changed to null for consistency with dropdown
     pages: "",
-    bookType: "",
+    bookType: null,  // Changed to null for consistency with dropdown
     isbn: "",
-    location: "",
-    status: "",
+    location: null,  // Changed to null for consistency with dropdown
+    status: null,  // Changed to null for consistency with dropdown
     image: "",
   });
 
@@ -38,7 +38,7 @@ const BookCreateForm = () => {
   const handleDropDownChange = (field) => (selectedOption) => {
     setFormData((prevState) => ({
       ...prevState,
-      [field]: selectedOption ? selectedOption.value : "",
+      [field]: selectedOption,
     }));
   };
 
@@ -53,7 +53,7 @@ const BookCreateForm = () => {
       Errors.author = "Author is required.";
     }
 
-    if (!formData.genre.trim()) {
+    if (!formData.genre) {
       Errors.genre = "A genre must be selected.";
     }
 
@@ -61,11 +61,11 @@ const BookCreateForm = () => {
       Errors.isbn = "ISBN is required.";
     }
 
-    if (!formData.location.trim()) {
+    if (!formData.location) {
       Errors.location = "A location must be selected.";
     }
 
-    if (!formData.bookType.trim()) {
+    if (!formData.bookType) {
       Errors.bookType = "A book type must be selected.";
     }
 
@@ -92,7 +92,17 @@ const BookCreateForm = () => {
     let toastId;
     try {
       toastId = showLoadingToast("Creating book...");
-      const response = await httpClient.post("api/book/", formData);
+
+      // Opret en ny formData, som kun indeholder value-delen af genre, location og bookType
+      const submissionData = {
+        ...formData,
+        genre: formData.genre.value,
+        location: formData.location.value,
+        bookType: formData.bookType.value,
+        status: formData.status.value,
+      };
+
+      const response = await httpClient.post("api/book/", submissionData);
       if (response.status === 201) {
         updateToast(toastId, "Book created successfully!", "success");
         navigate(location?.state?.previousUrl ? location.state.previousUrl : "/books");
@@ -151,24 +161,24 @@ const BookCreateForm = () => {
               />
             </div>
             <div className="py-2">
-                <label
-                    htmlFor="genre"
-                    className="flex justify-between items-center mb-2 text-sm font-medium ff-text"
-                >
-                    Genre
-                    {errors.genre && (
-                    <p className="text-red-500 text-xs ml-auto">{errors.genre}</p>
-                    )}
-                </label>
-                <DropDownForm
-                    id="genre"
-                    endpoint={endpoints.genres}
-                    labelKey="genreName"
-                    valueKey="genreId"
-                    initialSelected={formData.genre}
-                    onValueChange={handleDropDownChange("genre")}
-                />
-                </div>
+              <label
+                htmlFor="genre"
+                className="flex justify-between items-center mb-2 text-sm font-medium ff-text"
+              >
+                Genre
+                {errors.genre && (
+                  <p className="text-red-500 text-xs ml-auto">{errors.genre}</p>
+                )}
+              </label>
+              <DropDownForm
+                id="genre" // Ensure this id is the same as the htmlFor in the label
+                endpoint={endpoints.genres}
+                labelKey="genreName"
+                valueKey="genreId"
+                initialSelected={formData.genre}
+                onValueChange={handleDropDownChange("genre")}
+              />
+            </div>
 
             <div className="py-2">
               <label

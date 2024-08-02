@@ -15,8 +15,11 @@ function BookTable() {
     const url = `${endpoints.books}?search=${searchTerm}`;
     try {
       const response = await httpClient.get(url);
-
-      setBooks(response);
+      if (Array.isArray(response)) {
+        setBooks(response);
+      } else {
+        console.error("Expected array but got:", response);
+      }
     } catch (error) {
       console.error("Error fetching books:", error);
     }
@@ -38,7 +41,7 @@ function BookTable() {
             Books Overview
           </span>
           <p className="mt-1 text-sm font-normal text-gray-500 dark:text-gray-400">
-          A detailed list of all books in BookBuddy along with their respective details.
+            A detailed list of all books in BookBuddy along with their respective details.
           </p>
         </div>
         <div className="mt-4 md:mt-0 flex flex-row">
@@ -94,7 +97,7 @@ function BookTable() {
           </tr>
         </thead>
         <tbody>
-          {books &&
+          {books.length > 0 ? (
             books.map((book) => (
               <tr
                 key={book.bookId}
@@ -107,7 +110,7 @@ function BookTable() {
                   {book.author}
                 </td>
                 <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
-                  {book.genre.genreName}
+                  {book.genre ? book.genre.genreName : "N/A"}
                 </td>
                 <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
                   {book.noOfPages}
@@ -119,7 +122,7 @@ function BookTable() {
                   {book.isbnNo}
                 </td>
                 <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
-                  {book.location.locationName}
+                  {book.location ? book.location.locationName : "N/A"}
                 </td>
                 <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
                   {book.status}
@@ -133,7 +136,14 @@ function BookTable() {
                   </button>
                 </td>
               </tr>
-            ))}
+            ))
+          ) : (
+            <tr>
+              <td colSpan="10" className="py-4 px-6 text-center text-gray-500 dark:text-gray-400">
+                No books found.
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
     </div>
