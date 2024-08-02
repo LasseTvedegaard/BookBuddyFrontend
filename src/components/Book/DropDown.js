@@ -11,7 +11,7 @@ export default function DropDownForm({
   options = [],
   labelKey = "label",
   valueKey = "value",
-  initialSelected = null,
+  initialSelected = "",
   onValueChange
 }) {
   const [data, setData] = useState([]);
@@ -64,36 +64,33 @@ export default function DropDownForm({
 
   useEffect(() => {
     if (options.length > 0) {
-        setData(options);
+      setData(options);
     } else if (endpoint) {
-        console.log(`Fetching data from endpoint: ${endpoint}`);
-        httpClient
-            .get(endpoint)
-            .then((response) => {
-                console.log("Fetched response:", response); // Log the entire response
-                if (response.data && Array.isArray(response.data)) {
-                    const responseData = response.data;
-                    const mappedData = responseData.map(item => ({
-                        value: item[valueKey],
-                        label: item[labelKey]
-                    }));
-                    setData(mappedData);
-                    console.log("Mapped data for Select component:", mappedData);
-                } else {
-                    console.warn("Response data is not an array or is missing", response.data);
-                }
-            })
-            .catch((error) => {
-                console.error("There was an error fetching the data", error);
-            });
+      console.log(`Fetching data from endpoint: ${endpoint}`);
+      httpClient.get(endpoint)
+        .then((response) => {
+          console.log("Fetched response:", response); // Log the entire response
+          if (response && Array.isArray(response)) {
+            const responseData = response;
+            const mappedData = responseData.map(item => ({
+              value: item[valueKey],
+              label: item[labelKey]
+            }));
+            setData(mappedData);
+            console.log("Mapped data for Select component:", mappedData);
+          } else {
+            console.warn("Response data is not an array or is missing", response);
+          }
+        })
+        .catch((error) => {
+          console.error("There was an error fetching the data", error);
+        });
     }
-}, [endpoint, httpClient, options, valueKey, labelKey]);
+  }, [endpoint, httpClient, options, valueKey, labelKey]);
 
   const handleChange = (selectedOption) => {
     setSelected(selectedOption);
-    if (onValueChange) {
-      onValueChange(selectedOption);
-    }
+    onValueChange(selectedOption);
   };
 
   return (

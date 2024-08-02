@@ -19,7 +19,7 @@ export default function HttpClient(baseURL) {
 
   apiClient.interceptors.response.use(
     (response) => {
-      return response.data; // Returner kun data
+      return response;
     },
     (error) => {
       console.error("API fejl:", error);
@@ -29,22 +29,22 @@ export default function HttpClient(baseURL) {
 
   return {
     get(endpoint, params = {}) {
-      return apiClient.get(endpoint, { params });
+      return apiClient.get(endpoint, { params }).then((response) => response.data);
     },
     post(endpoint, data) {
       if (data instanceof FormData) {
         delete apiClient.defaults.headers["Content-Type"];
       }
-      return apiClient.post(endpoint, data);
+      return apiClient.post(endpoint, data).then((response) => response.data);
     },
     put(endpoint, data) {
       if (data instanceof FormData) {
         delete apiClient.defaults.headers["Content-Type"];
       }
-      return apiClient.put(endpoint, data);
+      return apiClient.put(endpoint, data).then((response) => response.data);
     },
     delete(endpoint) {
-      return apiClient.delete(endpoint);
+      return apiClient.delete(endpoint).then((response) => response.data);
     },
   };
 }
