@@ -1,5 +1,7 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; // Importer toast CSS
 import BookTable from './pages/bookTable';
 import Dashboard from './pages/Dashboard';
 import AddBookPage from './pages/BooksAdd';
@@ -17,6 +19,7 @@ function App() {
           <Route path="add-book" element={<AddBookPage />} />
         </Route>
       </Routes>
+      <ToastContainer /> {/* Tilføj ToastContainer her */}
     </ThemeProvider>
   );
 }

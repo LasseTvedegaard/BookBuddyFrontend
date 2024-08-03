@@ -4,7 +4,7 @@ import { FiMoreHorizontal } from "react-icons/fi";
 import HttpClient from "../services/HttpClient";
 import { endpoints } from "../endpoints";
 
-const httpClient = HttpClient(process.env.REACT_APP_API_URL);
+const httpClient = new HttpClient(process.env.REACT_APP_API_URL); // Opdateret instansiering
 
 function BookTable() {
   const [books, setBooks] = useState([]);
@@ -15,7 +15,8 @@ function BookTable() {
     const url = `${endpoints.books}?search=${searchTerm}`;
     try {
       const response = await httpClient.get(url);
-      if (Array.isArray(response)) {
+      console.log("Fetched response:", response); // Debugging
+      if (response && Array.isArray(response)) {
         setBooks(response);
       } else {
         console.error("Expected array but got:", response);
@@ -104,31 +105,31 @@ function BookTable() {
                 className="text-left hover:bg-slate-300 hover:bg-opacity-50 dark:hover:bg-opacity-10"
               >
                 <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
-                  {book.title}
+                  {book.title || "N/A"}
                 </td>
                 <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
-                  {book.author}
+                  {book.author || "N/A"}
                 </td>
                 <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
                   {book.genre ? book.genre.genreName : "N/A"}
                 </td>
                 <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
-                  {book.noOfPages}
+                  {book.noOfPages || "N/A"}
                 </td>
                 <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
-                  {book.bookType}
+                  {book.bookType || "N/A"}
                 </td>
                 <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
-                  {book.isbnNo}
+                  {book.isbnNo || "N/A"}
                 </td>
                 <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
                   {book.location ? book.location.locationName : "N/A"}
                 </td>
                 <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
-                  {book.status}
+                  {book.status || "N/A"}
                 </td>
                 <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
-                  <img src={book.imageURL} alt={book.title} className="h-10 w-10"/>
+                  <img src={book.imageURL || ""} alt={book.title} className="h-10 w-10"/>
                 </td>
                 <td className="py-4 mr-4 items-center justify-center float-right">
                   <button onClick={() => handleDetailsClick(book.bookId)}>

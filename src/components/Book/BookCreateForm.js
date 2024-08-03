@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import HttpClient from "../../services/HttpClient";
 import DropDownForm from "./DropDown";
@@ -16,12 +16,12 @@ const BookCreateForm = () => {
   const [formData, setFormData] = useState({
     title: "",
     author: "",
-    genre: null,  // Changed to null for consistency with dropdown
+    genre: "",
     pages: "",
-    bookType: null,  // Changed to null for consistency with dropdown
+    bookType: "",
     isbn: "",
-    location: null,  // Changed to null for consistency with dropdown
-    status: null,  // Changed to null for consistency with dropdown
+    location: "",
+    status: "",
     image: "",
   });
 
@@ -35,12 +35,12 @@ const BookCreateForm = () => {
     }));
   };
 
-  const handleDropDownChange = (field) => (selectedOption) => {
+  const handleDropDownChange = useCallback((field) => (selectedOption) => {
     setFormData((prevState) => ({
       ...prevState,
       [field]: selectedOption,
     }));
-  };
+  }, []);
 
   const validateForm = () => {
     const Errors = {};
@@ -53,7 +53,7 @@ const BookCreateForm = () => {
       Errors.author = "Author is required.";
     }
 
-    if (!formData.genre) {
+    if (!formData.genre || !formData.genre.value) {
       Errors.genre = "A genre must be selected.";
     }
 
@@ -61,11 +61,11 @@ const BookCreateForm = () => {
       Errors.isbn = "ISBN is required.";
     }
 
-    if (!formData.location) {
+    if (!formData.location || !formData.location.value) {
       Errors.location = "A location must be selected.";
     }
 
-    if (!formData.bookType) {
+    if (!formData.bookType || !formData.bookType.value) {
       Errors.bookType = "A book type must be selected.";
     }
 
@@ -82,27 +82,38 @@ const BookCreateForm = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
+  
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
-
+  
     let toastId;
     try {
       toastId = showLoadingToast("Creating book...");
-
-      // Opret en ny formData, som kun indeholder value-delen af genre, location og bookType
+  
       const submissionData = {
-        ...formData,
-        genre: formData.genre.value,
-        location: formData.location.value,
+        title: formData.title,
+        author: formData.author,
+        genre: {
+          genreId: formData.genre.value,
+          genreName: formData.genre.label
+        },
+        noOfPages: parseInt(formData.pages, 10),
         bookType: formData.bookType.value,
+        isbnNo: formData.isbn,
+        location: {
+          locationId: formData.location.value,
+          locationName: formData.location.label
+        },
         status: formData.status.value,
+        imageURL: formData.image
       };
-
-      const response = await httpClient.post("api/book/", submissionData);
+  
+      console.log('Submission data:', submissionData); // Log dataen
+  
+      const response = await httpClient.post(endpoints.books, submissionData);
       if (response.status === 201) {
         updateToast(toastId, "Book created successfully!", "success");
         navigate(location?.state?.previousUrl ? location.state.previousUrl : "/books");
@@ -114,7 +125,8 @@ const BookCreateForm = () => {
       console.error("Error creating book:", error);
     }
   };
-
+  
+  
   return (
     <div className="w-full bg-white rounded-md dark:bg-ff_bg_continer_dark dark:text-white p-4">
       <form onSubmit={handleSubmit}>
@@ -171,7 +183,7 @@ const BookCreateForm = () => {
                 )}
               </label>
               <DropDownForm
-                id="genre" // Ensure this id is the same as the htmlFor in the label
+                id="genre"
                 endpoint={endpoints.genres}
                 labelKey="genreName"
                 valueKey="genreId"
@@ -220,7 +232,6 @@ const BookCreateForm = () => {
               />
             </div>
           </div>
-          {/* Højre kolonne */}
           <div className="w-full md:w-1/2 px-3 mb-6 md:border-l border-gray-200 dark:border-ff_background_dark md:pl-10">
             <div className="py-2">
               <label
