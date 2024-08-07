@@ -1,8 +1,8 @@
 import React, { useState, useCallback } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import HttpClient from "../../services/HttpClient";
 import DropDownForm from "./DropDown";
-import { showLoadingToast, showSuccessToast, showErrorToast, hideToast } from "../common/Toast";
+import { showLoadingToast, showErrorToast, showSuccessToast, hideToast } from "../common/Toast";
 import { endpoints } from "../../endpoints";
 import { bookTypes, statuses } from "./BookEnums";
 
@@ -11,7 +11,6 @@ const httpClient = new HttpClient(baseUrl);
 
 const BookCreateForm = () => {
   const navigate = useNavigate();
-  const location = useLocation();
 
   const [formData, setFormData] = useState({
     title: "",
@@ -89,8 +88,7 @@ const BookCreateForm = () => {
       return;
     }
 
-    let toastId = showLoadingToast("Creating book...");
-    console.log('Loading toast ID:', toastId); 
+    const toastId = showLoadingToast("Creating book...");
 
     try {
       const submissionData = {
@@ -111,34 +109,21 @@ const BookCreateForm = () => {
         imageURL: formData.image,
       };
 
-      console.log("Submission data:", submissionData); 
-
       const responseData = await httpClient.post(endpoints.books, submissionData);
-      console.log("Response data:", responseData); 
 
       if (responseData) {
-        console.log('Updating toast with success message');
         setTimeout(() => {
           hideToast(toastId); 
           showSuccessToast("Book created successfully!"); 
-        }, 2500); 
-        setTimeout(() => {
-          navigate(location?.state?.previousUrl ? location.state.previousUrl : "/books");
-        }, 2000); 
+          navigate("/books");
+        }, 1000); 
       } else {
         throw new Error("No response data");
       }
     } catch (error) {
-      console.error("Error creating book:", error);
       const errorMessage = error.response?.data?.message || error.message || "Unknown error";
-      console.log('Updating toast with error message');
-      setTimeout(() => {
-        hideToast(toastId); 
-        showErrorToast(`Error creating book: ${errorMessage}`); 
-      }, 2000); 
-      setTimeout(() => {
-        navigate(location?.state?.previousUrl ? location.state.previousUrl : "/books");
-      }, 2000); 
+      hideToast(toastId); 
+      showErrorToast(`Error creating book: ${errorMessage}`); 
     }
   };
 
@@ -148,14 +133,9 @@ const BookCreateForm = () => {
         <div className="flex flex-wrap">
           <div className="w-full md:w-1/2 px-3 md:mb-6 md:pr-10">
             <div className="py-2">
-              <label
-                htmlFor="title"
-                className="flex justify-between items-center mb-2 text-sm font-medium ff-text"
-              >
+              <label htmlFor="title" className="flex justify-between items-center mb-2 text-sm font-medium ff-text">
                 Title
-                {errors.title && (
-                  <p className="text-red-500 text-xs ml-auto">{errors.title}</p>
-                )}
+                {errors.title && <p className="text-red-500 text-xs ml-auto">{errors.title}</p>}
               </label>
               <input
                 type="text"
@@ -168,14 +148,9 @@ const BookCreateForm = () => {
               />
             </div>
             <div className="py-2">
-              <label
-                htmlFor="author"
-                className="flex justify-between items-center mb-2 text-sm font-medium ff-text"
-              >
+              <label htmlFor="author" className="flex justify-between items-center mb-2 text-sm font-medium ff-text">
                 Author
-                {errors.author && (
-                  <p className="text-red-500 text-xs ml-auto">{errors.author}</p>
-                )}
+                {errors.author && <p className="text-red-500 text-xs ml-auto">{errors.author}</p>}
               </label>
               <input
                 type="text"
@@ -188,14 +163,9 @@ const BookCreateForm = () => {
               />
             </div>
             <div className="py-2">
-              <label
-                htmlFor="genre"
-                className="flex justify-between items-center mb-2 text-sm font-medium ff-text"
-              >
+              <label htmlFor="genre" className="flex justify-between items-center mb-2 text-sm font-medium ff-text">
                 Genre
-                {errors.genre && (
-                  <p className="text-red-500 text-xs ml-auto">{errors.genre}</p>
-                )}
+                {errors.genre && <p className="text-red-500 text-xs ml-auto">{errors.genre}</p>}
               </label>
               <DropDownForm
                 id="genre"
@@ -208,14 +178,9 @@ const BookCreateForm = () => {
             </div>
 
             <div className="py-2">
-              <label
-                htmlFor="pages"
-                className="flex justify-between items-center mb-2 text-sm font-medium ff-text"
-              >
+              <label htmlFor="pages" className="flex justify-between items-center mb-2 text-sm font-medium ff-text">
                 Number of pages
-                {errors.pages && (
-                  <p className="text-red-500 text-xs ml-auto">{errors.pages}</p>
-                )}
+                {errors.pages && <p className="text-red-500 text-xs ml-auto">{errors.pages}</p>}
               </label>
               <input
                 type="text"
@@ -228,14 +193,9 @@ const BookCreateForm = () => {
               />
             </div>
             <div className="py-2">
-              <label
-                htmlFor="bookType"
-                className="flex justify-between items-center mb-2 text-sm font-medium ff-text"
-              >
+              <label htmlFor="bookType" className="flex justify-between items-center mb-2 text-sm font-medium ff-text">
                 Type
-                {errors.bookType && (
-                  <p className="text-red-500 text-xs ml-auto">{errors.bookType}</p>
-                )}
+                {errors.bookType && <p className="text-red-500 text-xs ml-auto">{errors.bookType}</p>}
               </label>
               <DropDownForm
                 id="bookType"
@@ -249,14 +209,9 @@ const BookCreateForm = () => {
           </div>
           <div className="w-full md:w-1/2 px-3 mb-6 md:border-l border-gray-200 dark:border-ff_background_dark md:pl-10">
             <div className="py-2">
-              <label
-                htmlFor="isbn"
-                className="flex justify-between items-center mb-2 text-sm font-medium ff-text"
-              >
+              <label htmlFor="isbn" className="flex justify-between items-center mb-2 text-sm font-medium ff-text">
                 ISBN
-                {errors.isbn && (
-                  <p className="text-red-500 text-xs ml-auto">{errors.isbn}</p>
-                )}
+                {errors.isbn && <p className="text-red-500 text-xs ml-auto">{errors.isbn}</p>}
               </label>
               <input
                 type="text"
@@ -269,14 +224,9 @@ const BookCreateForm = () => {
               />
             </div>
             <div className="py-2">
-              <label
-                htmlFor="location"
-                className="flex justify-between items-center mb-2 text-sm font-medium ff-text"
-              >
+              <label htmlFor="location" className="flex justify-between items-center mb-2 text-sm font-medium ff-text">
                 Location
-                {errors.location && (
-                  <p className="text-red-500 text-xs ml-auto">{errors.location}</p>
-                )}
+                {errors.location && <p className="text-red-500 text-xs ml-auto">{errors.location}</p>}
               </label>
               <DropDownForm
                 id="location"
@@ -288,14 +238,9 @@ const BookCreateForm = () => {
               />
             </div>
             <div className="py-2">
-              <label
-                htmlFor="status"
-                className="flex justify-between items-center mb-2 text-sm font-medium ff-text"
-              >
+              <label htmlFor="status" className="flex justify-between items-center mb-2 text-sm font-medium ff-text">
                 Status
-                {errors.status && (
-                  <p className="text-red-500 text-xs ml-auto">{errors.status}</p>
-                )}
+                {errors.status && <p className="text-red-500 text-xs ml-auto">{errors.status}</p>}
               </label>
               <DropDownForm
                 id="status"
@@ -307,14 +252,9 @@ const BookCreateForm = () => {
               />
             </div>
             <div className="py-2">
-              <label
-                htmlFor="image"
-                className="flex justify-between items-center mb-2 text-sm font-medium ff-text"
-              >
+              <label htmlFor="image" className="flex justify-between items-center mb-2 text-sm font-medium ff-text">
                 Image
-                {errors.image && (
-                  <p className="text-red-500 text-xs ml-auto">{errors.image}</p>
-                )}
+                {errors.image && <p className="text-red-500 text-xs ml-auto">{errors.image}</p>}
               </label>
               <input
                 type="text"
