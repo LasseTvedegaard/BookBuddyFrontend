@@ -4,7 +4,7 @@ import { FiMoreHorizontal } from "react-icons/fi";
 import HttpClient from "../services/HttpClient";
 import { endpoints } from "../endpoints";
 
-const httpClient = new HttpClient(process.env.REACT_APP_API_URL); 
+const httpClient = new HttpClient(process.env.REACT_APP_API_URL);
 
 function BookTable() {
   const [books, setBooks] = useState([]);
@@ -35,7 +35,7 @@ function BookTable() {
   };
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 bg-ff_background_light dark:bg-ff_background_dark min-h-screen">
       <div className="pb-6 flex flex-col md:flex-row justify-between items-start md:items-center bg-ff_background_light dark:bg-ff_background_dark rounded-t-lg">
         <div>
           <span className="text-3xl font-semibold text-gray-900 dark:text-white">
@@ -51,7 +51,7 @@ function BookTable() {
             placeholder="Search title or author"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="border p-2 mr-2"
+            className="border p-2 mr-2 bg-ff_background_light dark:bg-gray-800 text-gray-900 dark:text-white"
           />
           <button
             className="ml-2 px-4 py-2 rounded-md bg-customYellow text-ff_background_dark font-semibold hover:bg-customYellowDark"
@@ -99,10 +99,12 @@ function BookTable() {
         </thead>
         <tbody>
           {books.length > 0 ? (
-            books.map((book) => (
+            books.map((book, index) => (
               <tr
                 key={book.bookId}
-                className="text-left hover:bg-slate-300 hover:bg-opacity-50 dark:hover:bg-opacity-10"
+                className={`${
+                  index % 2 === 0 ? "ff-table-row-even" : "ff-table-row-odd"
+                } hover:bg-gray-100 dark:hover:bg-gray-700`}
               >
                 <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
                   {book.title || "N/A"}

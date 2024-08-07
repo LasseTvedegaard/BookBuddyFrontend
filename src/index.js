@@ -1,17 +1,17 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter as Router } from 'react-router-dom'; // Importer BrowserRouter
+import { BrowserRouter as Router } from 'react-router-dom';
 import "./index.css";
 import App from "./App";
-import Background from "./components/Background";
+import { ThemeProvider } from "./components/Theme/ThemeContext";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-    <Router>
-        <Background>
-          <App />
-        </Background>
-    </Router>
+    <ThemeProvider>
+      <Router>
+        <App />
+      </Router>
+    </ThemeProvider>
   </React.StrictMode>
 );
