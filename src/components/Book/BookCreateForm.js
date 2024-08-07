@@ -2,7 +2,7 @@ import React, { useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import HttpClient from "../../services/HttpClient";
 import DropDownForm from "./DropDown";
-import { showLoadingToast, updateToast } from "../common/Toast";
+import { showLoadingToast, showSuccessToast, showErrorToast, hideToast } from "../common/Toast";
 import { endpoints } from "../../endpoints";
 import { bookTypes, statuses } from "./BookEnums";
 
@@ -43,90 +43,105 @@ const BookCreateForm = () => {
   }, []);
 
   const validateForm = () => {
-    const Errors = {};
+    const errors = {};
 
     if (!formData.title.trim()) {
-      Errors.title = "Title is required.";
+      errors.title = "Title is required.";
     }
 
     if (!formData.author.trim()) {
-      Errors.author = "Author is required.";
+      errors.author = "Author is required.";
     }
 
     if (!formData.genre || !formData.genre.value) {
-      Errors.genre = "A genre must be selected.";
+      errors.genre = "A genre must be selected.";
     }
 
     if (!formData.isbn.trim()) {
-      Errors.isbn = "ISBN is required.";
+      errors.isbn = "ISBN is required.";
     }
 
     if (!formData.location || !formData.location.value) {
-      Errors.location = "A location must be selected.";
+      errors.location = "A location must be selected.";
     }
 
     if (!formData.bookType || !formData.bookType.value) {
-      Errors.bookType = "A book type must be selected.";
+      errors.bookType = "A book type must be selected.";
     }
 
     if (!formData.pages.trim()) {
-      Errors.pages = "The number of pages must be entered.";
+      errors.pages = "The number of pages must be entered.";
     }
 
     if (!formData.image.trim()) {
-      Errors.image = "An image is required.";
+      errors.image = "An image is required.";
     }
 
-    return Errors;
+    return errors;
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-  
+
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
-  
-    let toastId;
+
+    let toastId = showLoadingToast("Creating book...");
+    console.log('Loading toast ID:', toastId); 
+
     try {
-      toastId = showLoadingToast("Creating book...");
-  
       const submissionData = {
         title: formData.title,
         author: formData.author,
         genre: {
           genreId: formData.genre.value,
-          genreName: formData.genre.label
+          genreName: formData.genre.label,
         },
         noOfPages: parseInt(formData.pages, 10),
         bookType: formData.bookType.value,
         isbnNo: formData.isbn,
         location: {
           locationId: formData.location.value,
-          locationName: formData.location.label
+          locationName: formData.location.label,
         },
         status: formData.status.value,
-        imageURL: formData.image
+        imageURL: formData.image,
       };
-  
-      console.log('Submission data:', submissionData); // Log dataen
-  
-      const response = await httpClient.post(endpoints.books, submissionData);
-      if (response.status === 201) {
-        updateToast(toastId, "Book created successfully!", "success");
-        navigate(location?.state?.previousUrl ? location.state.previousUrl : "/books");
+
+      console.log("Submission data:", submissionData); 
+
+      const responseData = await httpClient.post(endpoints.books, submissionData);
+      console.log("Response data:", responseData); 
+
+      if (responseData) {
+        console.log('Updating toast with success message');
+        setTimeout(() => {
+          hideToast(toastId); 
+          showSuccessToast("Book created successfully!"); 
+        }, 2500); 
+        setTimeout(() => {
+          navigate(location?.state?.previousUrl ? location.state.previousUrl : "/books");
+        }, 2000); 
       } else {
-        updateToast(toastId, `Error creating book: ${response.statusText}`, "error");
+        throw new Error("No response data");
       }
     } catch (error) {
-      updateToast(toastId, `Error creating book: ${error}`, "error");
       console.error("Error creating book:", error);
+      const errorMessage = error.response?.data?.message || error.message || "Unknown error";
+      console.log('Updating toast with error message');
+      setTimeout(() => {
+        hideToast(toastId); 
+        showErrorToast(`Error creating book: ${errorMessage}`); 
+      }, 2000); 
+      setTimeout(() => {
+        navigate(location?.state?.previousUrl ? location.state.previousUrl : "/books");
+      }, 2000); 
     }
   };
-  
-  
+
   return (
     <div className="w-full bg-white rounded-md dark:bg-ff_bg_continer_dark dark:text-white p-4">
       <form onSubmit={handleSubmit}>
