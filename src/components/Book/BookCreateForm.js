@@ -113,17 +113,17 @@ const BookCreateForm = () => {
 
       if (responseData) {
         setTimeout(() => {
-          hideToast(toastId); 
-          showSuccessToast("Book created successfully!"); 
+          hideToast(toastId); // Hide the loading toast
+          showSuccessToast("Book created successfully!"); // Show success toast
           navigate("/books");
-        }, 1000); 
+        }, 1000); // Wait for 1 second before showing the success toast and navigating
       } else {
         throw new Error("No response data");
       }
     } catch (error) {
       const errorMessage = error.response?.data?.message || error.message || "Unknown error";
-      hideToast(toastId); 
-      showErrorToast(`Error creating book: ${errorMessage}`); 
+      hideToast(toastId); // Hide the loading toast
+      showErrorToast(`Error creating book: ${errorMessage}`); // Show error toast
     }
   };
 

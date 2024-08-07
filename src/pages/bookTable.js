@@ -4,7 +4,7 @@ import { FiMoreHorizontal } from "react-icons/fi";
 import HttpClient from "../services/HttpClient";
 import { endpoints } from "../endpoints";
 
-const httpClient = new HttpClient(process.env.REACT_APP_API_URL); // Opdateret instansiering
+const httpClient = new HttpClient(process.env.REACT_APP_API_URL); 
 
 function BookTable() {
   const [books, setBooks] = useState([]);
