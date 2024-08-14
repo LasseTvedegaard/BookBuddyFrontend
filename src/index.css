@@ -2,8 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-html {
-  @apply bg-ff_background_light dark:bg-ff_background_dark min-h-screen;
+html, body {
+  @apply bg-ff_background_light dark:bg-ff_background_dark min-h-screen !important;
 }
 
 body {
@@ -37,11 +37,11 @@ body {
 }
 
 .ff-table-row-odd {
-  @apply bg-gray-200 bg-opacity-75 dark:bg-ff_background_dark dark:bg-opacity-20;
+  @apply bg-gray-200 bg-opacity-75 dark:bg-ff_background_dark dark:bg-opacity-20 !important;
 }
 
 .ff-table-row-even {
-  @apply bg-gray-50 dark:bg-gray-400 dark:bg-opacity-5;
+  @apply bg-gray-50 dark:bg-gray-400 dark:bg-opacity-5 !important;
 }
 
 .tooltip {
