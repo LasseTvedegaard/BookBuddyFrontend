@@ -3,19 +3,23 @@ import { useNavigate } from "react-router-dom";
 import { FiMoreHorizontal } from "react-icons/fi";
 import HttpClient from "../services/HttpClient";
 import { endpoints } from "../endpoints";
+import Pagination from '../components/common/Pagination';
+
+
 
 const httpClient = new HttpClient(process.env.REACT_APP_API_URL);
 
 function BookTable() {
   const [books, setBooks] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1); // Current page number
+  const [booksPerPage] = useState(10); // Number of books to display per page
   const navigate = useNavigate();
 
   const fetchBooks = useCallback(async () => {
     const url = `${endpoints.books}?search=${searchTerm}`;
     try {
       const response = await httpClient.get(url);
-      console.log("Fetched response:", response); // Debugging
       if (response && Array.isArray(response)) {
         setBooks(response);
       } else {
@@ -33,6 +37,14 @@ function BookTable() {
   const handleDetailsClick = (bookId) => {
     navigate(`/books/${bookId}`);
   };
+
+  // Get current books
+  const indexOfLastBook = currentPage * booksPerPage;
+  const indexOfFirstBook = indexOfLastBook - booksPerPage;
+  const currentBooks = books.slice(indexOfFirstBook, indexOfLastBook);
+
+  // Change page
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
     <div className="container mx-auto p-4 bg-ff_background_light dark:bg-ff_background_dark min-h-screen">
@@ -98,8 +110,8 @@ function BookTable() {
           </tr>
         </thead>
         <tbody>
-          {books.length > 0 ? (
-            books.map((book, index) => (
+          {currentBooks.length > 0 ? (
+            currentBooks.map((book, index) => (
               <tr
                 key={book.bookId}
                 className={`${
@@ -149,6 +161,15 @@ function BookTable() {
           )}
         </tbody>
       </table>
+      
+      {/* Pagination */}
+      <div className="flex justify-center mt-4">
+        <Pagination
+          booksPerPage={booksPerPage}
+          totalBooks={books.length}
+          paginate={paginate}
+        />
+      </div>
     </div>
   );
 }
