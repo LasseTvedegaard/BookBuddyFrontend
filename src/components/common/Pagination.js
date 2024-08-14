@@ -1,56 +1,60 @@
 import React from 'react';
-import { FiChevronLeft, FiChevronRight } from 'react-icons/fi'; // Importing icons for the arrows
+import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
-const Pagination = ({ booksPerPage, totalBooks, paginate, currentPage }) => {
-  const pageNumbers = [];
+const Pagination = ({ currentPage, totalPages, onPageChange }) => {
+  const MAX_PAGES = 5;
 
-  for (let i = 1; i <= Math.ceil(totalBooks / booksPerPage); i++) {
-    pageNumbers.push(i);
-  }
+  const calculateStart = () => {
+    if (currentPage <= Math.floor(MAX_PAGES / 2)) {
+      return 1;
+    } else if (currentPage > totalPages - Math.floor(MAX_PAGES / 2)) {
+      return totalPages - MAX_PAGES + 1;
+    } else {
+      return currentPage - Math.floor(MAX_PAGES / 2);
+    }
+  };
+
+  const startPage = Math.max(calculateStart(), 1);
+  const endPage = Math.min(startPage + MAX_PAGES - 1, totalPages);
 
   return (
-    <nav>
-      <ul className="inline-flex items-center -space-x-px">
-        {/* Previous Button */}
-        <li>
-          <button
-            onClick={() => paginate(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="py-2 px-3 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-          >
-            <FiChevronLeft />
-          </button>
-        </li>
+    <div className="flex items-center justify-center space-x-2 my-4">
+      {/* Previous Button */}
+      <button
+        disabled={currentPage === 1}
+        onClick={() => onPageChange(currentPage - 1)}
+        className="px-4 py-2 text-sm text-gray-700 bg-white rounded-md dark:bg-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
+      >
+        <FiChevronLeft />
+      </button>
 
-        {/* Page Numbers */}
-        {pageNumbers.map((number) => (
-          <li key={number}>
-            <a
-              onClick={() => paginate(number)}
-              href="#!"
-              className={`py-2 px-3 ml-0 leading-tight ${
-                currentPage === number
-                  ? "text-white bg-blue-500"
-                  : "text-gray-500 bg-white hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-              } border border-gray-300 dark:border-gray-700`}
-            >
-              {number}
-            </a>
-          </li>
-        ))}
-
-        {/* Next Button */}
-        <li>
+      {/* Page Numbers */}
+      {Array.from({ length: endPage - startPage + 1 }, (_, index) => {
+        const pageNumber = startPage + index;
+        return (
           <button
-            onClick={() => paginate(currentPage + 1)}
-            disabled={currentPage === pageNumbers.length}
-            className="py-2 px-3 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+            key={pageNumber}
+            className={`mx-1 px-4 py-2 text-sm rounded-md ${
+              currentPage === pageNumber
+                ? "text-white bg-blue-500 dark:bg-darkGrayishBlue"
+                : "text-gray-700 bg-white dark:bg-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
+            }`}
+            onClick={() => onPageChange(pageNumber)}
           >
-            <FiChevronRight />
+            {pageNumber}
           </button>
-        </li>
-      </ul>
-    </nav>
+        );
+      })}
+
+      {/* Next Button */}
+      <button
+        disabled={currentPage === totalPages}
+        onClick={() => onPageChange(currentPage + 1)}
+        className="px-4 py-2 text-sm text-gray-700 bg-white rounded-md dark:bg-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
+      >
+        <FiChevronRight />
+      </button>
+    </div>
   );
 };
 

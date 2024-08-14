@@ -5,8 +5,6 @@ import HttpClient from "../services/HttpClient";
 import { endpoints } from "../endpoints";
 import Pagination from '../components/common/Pagination';
 
-
-
 const httpClient = new HttpClient(process.env.REACT_APP_API_URL);
 
 function BookTable() {
@@ -44,7 +42,9 @@ function BookTable() {
   const currentBooks = books.slice(indexOfFirstBook, indexOfLastBook);
 
   // Change page
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const paginate = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
 
   return (
     <div className="container mx-auto p-4 bg-ff_background_light dark:bg-ff_background_dark min-h-screen">
@@ -165,9 +165,9 @@ function BookTable() {
       {/* Pagination */}
       <div className="flex justify-center mt-4">
         <Pagination
-          booksPerPage={booksPerPage}
-          totalBooks={books.length}
-          paginate={paginate}
+          currentPage={currentPage} 
+          totalPages={Math.ceil(books.length / booksPerPage)} 
+          onPageChange={paginate} 
         />
       </div>
     </div>
