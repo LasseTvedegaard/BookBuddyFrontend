@@ -4,6 +4,8 @@ import { FiMoreHorizontal } from "react-icons/fi";
 import HttpClient from "../services/HttpClient";
 import { endpoints } from "../endpoints";
 import Pagination from '../components/common/Pagination';
+import SearchComponent from '../components/common/SearchBar';
+import Modal from '../components/common/Modal';
 
 const httpClient = new HttpClient(process.env.REACT_APP_API_URL);
 
@@ -12,6 +14,8 @@ function BookTable() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1); // Current page number
   const [booksPerPage] = useState(10); // Number of books to display per page
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedBookImage, setSelectedBookImage] = useState(null);
   const navigate = useNavigate();
 
   const fetchBooks = useCallback(async () => {
@@ -36,6 +40,16 @@ function BookTable() {
     navigate(`/books/${bookId}`);
   };
 
+  const openModal = (imageURL) => {
+    setSelectedBookImage(imageURL);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedBookImage(null);
+  };
+
   // Get current books
   const indexOfLastBook = currentPage * booksPerPage;
   const indexOfFirstBook = indexOfLastBook - booksPerPage;
@@ -58,12 +72,10 @@ function BookTable() {
           </p>
         </div>
         <div className="mt-4 md:mt-0 flex flex-row">
-          <input
-            type="text"
+          <SearchComponent
             placeholder="Search title or author"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="border p-2 mr-2 bg-ff_background_light dark:bg-gray-800 text-gray-900 dark:text-white"
           />
           <button
             className="ml-2 px-4 py-2 rounded-md bg-customYellow text-ff_background_dark font-semibold hover:bg-customYellowDark"
@@ -143,7 +155,12 @@ function BookTable() {
                   {book.status || "N/A"}
                 </td>
                 <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
-                  <img src={book.imageURL || ""} alt={book.title} className="h-10 w-10"/>
+                  <img 
+                    src={book.imageURL || ""} 
+                    alt={book.title} 
+                    className="h-10 w-10 cursor-pointer"
+                    onClick={() => openModal(book.imageURL)}
+                  />
                 </td>
                 <td className="py-4 mr-4 items-center justify-center float-right">
                   <button onClick={() => handleDetailsClick(book.bookId)}>
@@ -170,6 +187,11 @@ function BookTable() {
           onPageChange={paginate} 
         />
       </div>
+
+      {/* Modal */}
+      <Modal isOpen={isModalOpen} onClose={closeModal}>
+        <img src={selectedBookImage} alt="Book" className="max-w-full max-h-full" />
+      </Modal>
     </div>
   );
 }
