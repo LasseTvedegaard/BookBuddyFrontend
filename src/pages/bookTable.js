@@ -82,7 +82,7 @@ function BookTable() {
             onClick={() => navigate("/add-book")}
           >
             Add new book
-          </button>
+            </button>
         </div>
       </div>
 
