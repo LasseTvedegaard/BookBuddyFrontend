@@ -6,14 +6,17 @@ import { endpoints } from "../endpoints";
 import Pagination from '../components/common/Pagination';
 import SearchComponent from '../components/common/SearchBar';
 import Modal from '../components/common/Modal';
+import { useUser } from "../components/common/Login/UserContext.js";
+
 
 const httpClient = new HttpClient(process.env.REACT_APP_API_URL);
 
 function BookTable() {
+  const { currentUser } = useUser(); // ✅ hentes korrekt i toppen
   const [books, setBooks] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1); // Current page number
-  const [booksPerPage] = useState(10); // Number of books to display per page
+  const [currentPage, setCurrentPage] = useState(1);
+  const [booksPerPage] = useState(10);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBookImage, setSelectedBookImage] = useState(null);
   const navigate = useNavigate();
@@ -50,14 +53,20 @@ function BookTable() {
     setSelectedBookImage(null);
   };
 
-  // Get current books
   const indexOfLastBook = currentPage * booksPerPage;
   const indexOfFirstBook = indexOfLastBook - booksPerPage;
   const currentBooks = books.slice(indexOfFirstBook, indexOfLastBook);
 
-  // Change page
   const paginate = (pageNumber) => {
     setCurrentPage(pageNumber);
+  };
+
+  const handleAddBookClick = () => {
+    if (currentUser) {
+      navigate("/add-book");
+    } else {
+      navigate("/login", { state: { from: "/add-book" } });
+    }
   };
 
   return (
@@ -78,47 +87,27 @@ function BookTable() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           <button
+            onClick={handleAddBookClick}
             className="ml-2 px-4 py-2 rounded-md bg-customYellow text-ff_background_dark font-semibold hover:bg-customYellowDark"
-            onClick={() => navigate("/add-book")}
           >
             Add new book
-            </button>
+          </button>
         </div>
       </div>
 
       <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
         <thead className="text-s text-gray-700 uppercase bg-gray-50 dark:bg-ff_bg_sidebar_dark dark:text-gray-400">
           <tr>
-            <th scope="col" className="px-6 py-4 w-[200px]">
-              Title
-            </th>
-            <th scope="col" className="px-6 py-4 w-[200px]">
-              Author
-            </th>
-            <th scope="col" className="px-6 py-4 w-[120px]">
-              Genre
-            </th>
-            <th scope="col" className="px-6 py-4 w-[80px]">
-              Pages
-            </th>
-            <th scope="col" className="px-6 py-4 w-[150px]">
-              Book Type
-            </th>
-            <th scope="col" className="px-6 py-4 w-[150px]">
-              ISBN
-            </th>
-            <th scope="col" className="px-6 py-4 w-[150px]">
-              Location
-            </th>
-            <th scope="col" className="px-6 py-4 w-[120px]">
-              Status
-            </th>
-            <th scope="col" className="px-6 py-4 w-[120px]">
-              Image
-            </th>
-            <th scope="col" className="px-6 py-4 float-right">
-              Details
-            </th>
+            <th className="px-6 py-4 w-[200px]">Title</th>
+            <th className="px-6 py-4 w-[200px]">Author</th>
+            <th className="px-6 py-4 w-[120px]">Genre</th>
+            <th className="px-6 py-4 w-[80px]">Pages</th>
+            <th className="px-6 py-4 w-[150px]">Book Type</th>
+            <th className="px-6 py-4 w-[150px]">ISBN</th>
+            <th className="px-6 py-4 w-[150px]">Location</th>
+            <th className="px-6 py-4 w-[120px]">Status</th>
+            <th className="px-6 py-4 w-[120px]">Image</th>
+            <th className="px-6 py-4 float-right">Details</th>
           </tr>
         </thead>
         <tbody>
@@ -130,30 +119,14 @@ function BookTable() {
                   index % 2 === 0 ? "ff-table-row-even" : "ff-table-row-odd"
                 } hover:bg-gray-100 dark:hover:bg-gray-700`}
               >
-                <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
-                  {book.title || "N/A"}
-                </td>
-                <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
-                  {book.author || "N/A"}
-                </td>
-                <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
-                  {book.genre ? book.genre.genreName : "N/A"}
-                </td>
-                <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
-                  {book.noOfPages || "N/A"}
-                </td>
-                <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
-                  {book.bookType || "N/A"}
-                </td>
-                <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
-                  {book.isbnNo || "N/A"}
-                </td>
-                <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
-                  {book.location ? book.location.locationName : "N/A"}
-                </td>
-                <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
-                  {book.status || "N/A"}
-                </td>
+                <td className="py-4 px-6 text-gray-900 dark:text-gray-300">{book.title || "N/A"}</td>
+                <td className="py-4 px-6 text-gray-900 dark:text-gray-300">{book.author || "N/A"}</td>
+                <td className="py-4 px-6 text-gray-900 dark:text-gray-300">{book.genre?.genreName || "N/A"}</td>
+                <td className="py-4 px-6 text-gray-900 dark:text-gray-300">{book.noOfPages || "N/A"}</td>
+                <td className="py-4 px-6 text-gray-900 dark:text-gray-300">{book.bookType || "N/A"}</td>
+                <td className="py-4 px-6 text-gray-900 dark:text-gray-300">{book.isbnNo || "N/A"}</td>
+                <td className="py-4 px-6 text-gray-900 dark:text-gray-300">{book.location?.locationName || "N/A"}</td>
+                <td className="py-4 px-6 text-gray-900 dark:text-gray-300">{book.status || "N/A"}</td>
                 <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
                   <img 
                     src={book.imageURL || ""} 
@@ -178,17 +151,15 @@ function BookTable() {
           )}
         </tbody>
       </table>
-      
-      {/* Pagination */}
+
       <div className="flex justify-center mt-4">
         <Pagination
-          currentPage={currentPage} 
-          totalPages={Math.ceil(books.length / booksPerPage)} 
-          onPageChange={paginate} 
+          currentPage={currentPage}
+          totalPages={Math.ceil(books.length / booksPerPage)}
+          onPageChange={paginate}
         />
       </div>
 
-      {/* Modal */}
       <Modal isOpen={isModalOpen} onClose={closeModal}>
         <img src={selectedBookImage} alt="Book" className="max-w-full max-h-full" />
       </Modal>
