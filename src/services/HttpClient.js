@@ -8,6 +8,16 @@ export default function HttpClient(baseURL) {
     },
   });
 
+  // Authorization-header automatisk med token
+  apiClient.interceptors.request.use((config) => {
+    const token = localStorage.getItem("bookbuddy_token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  });
+
+  //response/error-håndtering
   apiClient.interceptors.response.use(
     (response) => response.data,
     (error) => {
@@ -16,6 +26,7 @@ export default function HttpClient(baseURL) {
     }
   );
 
+  // 💡 API-metoder
   return {
     get(endpoint, params = {}) {
       return apiClient.get(endpoint, { params });

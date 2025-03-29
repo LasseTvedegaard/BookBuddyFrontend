@@ -2,14 +2,18 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
 import BookTable from './pages/bookTable.js';
 import Dashboard from './pages/Dashboard.js';
 import AddBookPage from './pages/AddBookPage.js';
+import CurrentlyReadingBooks from './pages/currentlyReading.js';
+import BookDetailsPage from './pages/bookDetails.js'; // ✅ korrekt import
+
 import Layout from './components/Layout.js';
 import { ThemeProvider } from './components/Theme/ThemeContext.js';
 import { UserProvider } from './components/common/Login/UserContext';
 import PrivateRoute from './components/common/Login/PrivateRoute';
-import UserAuthForm from './components/common/Login/UserAuthForm';
+import LoginPage from './pages/LoginPage';
 
 function App() {
   return (
@@ -17,16 +21,17 @@ function App() {
       <UserProvider>
         <Routes>
           <Route element={<Layout />}>
-            {/* Login-side */}
-            <Route path="/login" element={<UserAuthForm />} />
 
-            {/* Root redirect til login */}
+            {/* Login page */}
+            <Route path="/login" element={<LoginPage />} />
+
+            {/* Root redirect to login */}
             <Route index element={<Navigate to="/login" replace />} />
 
-            {/* Offentlig rute – alle må se bøger */}
+            {/* Public route – everyone can see books */}
             <Route path="/books" element={<BookTable />} />
 
-            {/* Private routes – kræver login */}
+            {/* Private routes – require login */}
             <Route
               path="/add-book"
               element={
@@ -35,6 +40,7 @@ function App() {
                 </PrivateRoute>
               }
             />
+
             <Route
               path="/dashboard"
               element={
@@ -43,9 +49,29 @@ function App() {
                 </PrivateRoute>
               }
             />
+
+            <Route
+              path="/currently-reading"
+              element={
+                <PrivateRoute>
+                  <CurrentlyReadingBooks />
+                </PrivateRoute>
+              }
+            />
+
+            {/* ✅ New route for book details */}
+            <Route
+              path="/books/:id"
+              element={
+                <PrivateRoute>
+                  <BookDetailsPage />
+                </PrivateRoute>
+              }
+            />
+
           </Route>
 
-          {/* Fallback hvis route ikke findes */}
+          {/* Fallback if route not found */}
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
 

@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useUser } from "./UserContext";
+import {
+  showLoadingToast,
+  updateToast,
+} from "../Toast";
 
 const baseUrl = process.env.REACT_APP_API_URL;
 
@@ -8,7 +12,7 @@ export default function UserAuthForm() {
   const { login } = useUser();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location.state?.from?.pathname || "/books";
+  const from = location.state?.from?.pathname || "/dashboard";
 
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState(null);
@@ -31,52 +35,131 @@ export default function UserAuthForm() {
     e.preventDefault();
     setError(null);
 
+    const toastId = showLoadingToast("Logger ind...");
+
     try {
       const res = await fetch(`${baseUrl}/auth/login`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: loginEmail }),
       });
 
       const data = await res.json();
+
       if (res.ok) {
         login(data.user, data.token);
+        updateToast(toastId, "Login gennemført", "success", "login-success");
         navigate(from, { replace: true });
       } else {
-        setError(data.message || "Login failed");
+        updateToast(toastId, data.message || "Login mislykkedes", "error");
       }
     } catch (err) {
       console.error("Login error:", err);
-      setError("An error occurred during login.");
+      updateToast(toastId, "Fejl under login", "error");
+    }
+  };
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(false);
+
+    const toastId = showLoadingToast("Opretter bruger...");
+
+    try {
+      const res = await fetch(`${baseUrl}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        updateToast(toastId, "Bruger oprettet! Du kan nu logge ind.", "success");
+        setSuccess(true);
+        setIsLogin(true);
+        setLoginEmail(form.email);
+        setForm({ email: "", firstName: "", lastName: "" });
+      } else {
+        updateToast(toastId, data.message || "Brugeroprettelse mislykkedes", "error");
+      }
+    } catch (err) {
+      console.error("Register error:", err);
+      updateToast(toastId, "Fejl under oprettelse", "error");
     }
   };
 
   return (
     <div className="max-w-xl mx-auto mt-10 p-8 bg-white shadow-md rounded">
-      <h2 className="text-3xl font-bold mb-6 text-center">Log ind</h2>
-      <form onSubmit={handleLogin} className="space-y-4">
+      <h2 className="text-3xl font-bold mb-6 text-center">
+        {isLogin ? "Log ind" : "Opret bruger"}
+      </h2>
+
+      <form
+        onSubmit={isLogin ? handleLogin : handleRegister}
+        className="space-y-4"
+      >
+        {!isLogin && (
+          <>
+            <input
+              type="text"
+              placeholder="Fornavn"
+              value={form.firstName}
+              onChange={(e) => setForm({ ...form, firstName: e.target.value })}
+              className="w-full p-2 border border-gray-300 rounded"
+              required
+            />
+            <input
+              type="text"
+              placeholder="Efternavn"
+              value={form.lastName}
+              onChange={(e) => setForm({ ...form, lastName: e.target.value })}
+              className="w-full p-2 border border-gray-300 rounded"
+              required
+            />
+          </>
+        )}
+
         <input
           type="email"
           placeholder="Email"
-          value={loginEmail}
-          onChange={(e) => setLoginEmail(e.target.value)}
-          className="w-full p-2 border border-gray-300 rounded"
+          value={isLogin ? loginEmail : form.email}
+          onChange={(e) =>
+            isLogin
+              ? setLoginEmail(e.target.value)
+              : setForm({ ...form, email: e.target.value })
+          }
+          className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-customYellow focus:outline-none"
           required
         />
+
         <button
           type="submit"
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded"
+          className="w-full bg-customYellow hover:bg-customYellowDark text-black font-semibold py-2 rounded transition duration-200"
         >
-          Log ind
+          {isLogin ? "Log ind" : "Opret bruger"}
         </button>
       </form>
-  
+
+      <button
+        type="button"
+        onClick={toggleForm}
+        className="text-sm text-gray-800 hover:text-black mt-2 block mx-auto"
+      >
+        {isLogin
+          ? "Har du ikke en bruger? Opret dig her"
+          : "Allerede bruger? Log ind"}
+      </button>
+
       {error && (
         <p className="text-red-500 text-sm mt-4 text-center">{error}</p>
       )}
+      {success && (
+        <p className="text-green-600 text-sm mt-4 text-center">
+          Bruger oprettet! Du kan nu logge ind.
+        </p>
+      )}
     </div>
   );
-  
 }

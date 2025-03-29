@@ -1,10 +1,19 @@
 import React, { useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ThemeContext } from '../Theme/ThemeContext';
+import { useUser } from '../common/Login/UserContext'; // <-- bruger info
 import MenuItems from '../Menu/MenuItems';
 
 const MenuDrawer = ({ open, onClose }) => {
   const { theme } = useContext(ThemeContext);
+  const { currentUser, logout } = useUser();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+    onClose();
+  };
 
   return (
     <div
@@ -22,6 +31,7 @@ const MenuDrawer = ({ open, onClose }) => {
           X
         </button>
       </div>
+
       <nav className="mt-10">
         {MenuItems.map((menu, index) => (
           <Link
@@ -35,6 +45,22 @@ const MenuDrawer = ({ open, onClose }) => {
           </Link>
         ))}
       </nav>
+
+      {currentUser && (
+  <>
+    <hr className="border-gray-300 dark:border-gray-700 mt-6 mb-4 mx-6" />
+    <div className="px-6 pb-6">
+<button
+  onClick={handleLogout}
+  className="w-full text-center bg-customYellow hover:bg-customYellowDark text-black font-medium py-2 rounded transition duration-200"
+>
+  Log ud
+</button>
+
+    </div>
+  </>
+)}
+
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { FiMoreHorizontal } from "react-icons/fi";
 import HttpClient from "../services/HttpClient";
 import { endpoints } from "../endpoints";
@@ -8,11 +8,10 @@ import SearchComponent from '../components/common/SearchBar';
 import Modal from '../components/common/Modal';
 import { useUser } from "../components/common/Login/UserContext.js";
 
-
 const httpClient = new HttpClient(process.env.REACT_APP_API_URL);
 
 function BookTable() {
-  const { currentUser } = useUser(); // ✅ hentes korrekt i toppen
+  const { currentUser } = useUser();
   const [books, setBooks] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -20,9 +19,22 @@ function BookTable() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBookImage, setSelectedBookImage] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const searchParams = new URLSearchParams(location.search);
+  const statusFilter = searchParams.get("status");
 
   const fetchBooks = useCallback(async () => {
-    const url = `${endpoints.books}?search=${searchTerm}`;
+    let url = `${endpoints.books}`;
+    const params = [];
+
+    if (searchTerm) params.push(`search=${searchTerm}`);
+    if (statusFilter) params.push(`status=${statusFilter}`);
+
+    if (params.length > 0) {
+      url += `?${params.join("&")}`;
+    }
+
     try {
       const response = await httpClient.get(url);
       if (response && Array.isArray(response)) {
@@ -33,11 +45,11 @@ function BookTable() {
     } catch (error) {
       console.error("Error fetching books:", error);
     }
-  }, [searchTerm]);
+  }, [searchTerm, statusFilter]);
 
   useEffect(() => {
     fetchBooks();
-  }, [fetchBooks]);
+  }, [fetchBooks, statusFilter]);
 
   const handleDetailsClick = (bookId) => {
     navigate(`/books/${bookId}`);
@@ -71,7 +83,7 @@ function BookTable() {
 
   return (
     <div className="container mx-auto p-4 bg-ff_background_light dark:bg-ff_background_dark min-h-screen">
-      <div className="pb-6 flex flex-col md:flex-row justify-between items-start md:items-center bg-ff_background_light dark:bg-ff_background_dark rounded-t-lg">
+      <div className="pb-6 flex flex-col md:flex-row justify-between items-start md:items-center">
         <div>
           <span className="text-3xl font-semibold text-gray-900 dark:text-white">
             Books Overview
@@ -79,6 +91,11 @@ function BookTable() {
           <p className="mt-1 text-sm font-normal text-gray-500 dark:text-gray-400">
             A detailed list of all books in BookBuddy along with their respective details.
           </p>
+          {statusFilter && (
+            <p className="text-sm italic text-gray-500 mt-1">
+              Filtered by status: <strong>{statusFilter}</strong>
+            </p>
+          )}
         </div>
         <div className="mt-4 md:mt-0 flex flex-row">
           <SearchComponent
@@ -128,9 +145,9 @@ function BookTable() {
                 <td className="py-4 px-6 text-gray-900 dark:text-gray-300">{book.location?.locationName || "N/A"}</td>
                 <td className="py-4 px-6 text-gray-900 dark:text-gray-300">{book.status || "N/A"}</td>
                 <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
-                  <img 
-                    src={book.imageURL || ""} 
-                    alt={book.title} 
+                  <img
+                    src={book.imageURL || ""}
+                    alt={book.title}
                     className="h-10 w-10 cursor-pointer"
                     onClick={() => openModal(book.imageURL)}
                   />
