@@ -1,8 +1,10 @@
+// Dashboard.js
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../components/common/Login/UserContext";
 import HttpClient from "../services/HttpClient";
 import { endpoints } from "../endpoints";
+import { toast } from "react-toastify";
 import {
   LineChart,
   Line,
@@ -12,46 +14,79 @@ import {
   CartesianGrid,
   ResponsiveContainer,
 } from "recharts";
+import CurrentlyReadingBook from "./currentlyReading";
 
 export default function Dashboard() {
   const { currentUser } = useUser();
   const navigate = useNavigate();
-
-  const [booksReadCount, setBooksReadCount] = useState(8);
-  const [currentlyReadingCount, setCurrentlyReadingCount] = useState(2);
-  const [booksToReadCount, setBooksToReadCount] = useState(5);
-
-  const [readingData, setReadingData] = useState([
-    { date: "Jan", books: 2 },
-    { date: "Feb", books: 3 },
-    { date: "Mar", books: 1 },
-    { date: "Apr", books: 2 },
-    { date: "Maj", books: 4 },
-  ]);
   const httpClient = new HttpClient(process.env.REACT_APP_API_URL);
 
-useEffect(() => {
-  const fetchCounts = async () => {
-    try {
-      const readBooks = await httpClient.get(`${endpoints.books}?status=read`);
-      setBooksReadCount(readBooks.length);
+  const [booksReadCount, setBooksReadCount] = useState(0);
+  const [currentlyReadingCount, setCurrentlyReadingCount] = useState(0);
+  const [booksToReadCount, setBooksToReadCount] = useState(0);
+  const [readingLogs, setReadingLogs] = useState([]);
 
-      const readingBooks = await httpClient.get(`${endpoints.books}?status=reading`);
-      setCurrentlyReadingCount(readingBooks.length);
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        const readBooks = await httpClient.get(`${endpoints.books}?status=read`);
+        const readingBooks = await httpClient.get(`${endpoints.books}?status=reading`);
+        const unreadBooks = await httpClient.get(`${endpoints.books}?status=unread`);
+        setBooksReadCount(readBooks.length);
+        setCurrentlyReadingCount(readingBooks.length);
+        setBooksToReadCount(unreadBooks.length);
+      } catch (error) {
+        console.error("Error fetching book counts:", error);
+      }
+    };
+    fetchCounts();
+  }, []);
 
-      const unreadBooks = await httpClient.get(`${endpoints.books}?status=unread`);
-      setBooksToReadCount(unreadBooks.length);
-    } catch (error) {
-      console.error("Error fetching book counts:", error);
-    }
-  };
-
-  fetchCounts();
-}, []);
-
+  useEffect(() => {
+    const fetchLogs = async () => {
+      if (!currentUser) return;
+      try {
+        const res = await httpClient.get(`${endpoints.logs}/user/${currentUser.userId}/latest?listType=reading`);
+        setReadingLogs(res);
+      } catch (error) {
+        console.error("Failed to fetch reading logs", error);
+      }
+    };
+    fetchLogs();
+  }, [currentUser]);
 
   const goToFilteredBooks = (status) => {
     navigate(`/books?status=${status}`);
+  };
+
+  const markAsRead = async (logId) => {
+    const logToUpdate = readingLogs.find(log => log.logId === logId);
+    if (!logToUpdate) return;
+
+    try {
+      await httpClient.put(`${endpoints.logs}/${logId}`, {
+        logId: logToUpdate.logId,
+        bookId: logToUpdate.book.bookId,
+        userId: logToUpdate.user.userId,
+        currentPage: logToUpdate.currentPage,
+        noOfPages: logToUpdate.noOfPages,
+        listType: "read"
+      });
+
+      setReadingLogs(prevLogs => prevLogs.filter(log => log.logId !== logId));
+      toast.success("Book marked as read!");
+    } catch (error) {
+      console.error("Error updating log status:", error);
+      toast.error("Failed to mark book as read.");
+    }
+  };
+
+  const updatePageProgress = (logId, newPage) => {
+    setReadingLogs(prev =>
+      prev.map(log =>
+        log.logId === logId ? { ...log, currentPage: newPage } : log
+      )
+    );
   };
 
   return (
@@ -60,7 +95,7 @@ useEffect(() => {
         Velkommen, {currentUser?.firstName || currentUser?.userId} 👋
       </h1>
 
-      {/* Stats Cards */}
+      {/* Stat cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <div
           onClick={() => goToFilteredBooks("read")}
@@ -86,10 +121,19 @@ useEffect(() => {
       </div>
 
       {/* Reading Graph */}
-      <div className="bg-ff_bg_continer_dark p-6 rounded-lg shadow text-ff_text_light">
+      <div className="bg-ff_bg_continer_dark p-6 rounded-lg shadow text-ff_text_light mb-10">
         <h2 className="text-2xl font-semibold mb-4">📈 Reading Progress Over Time</h2>
         <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={readingData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+          <LineChart
+            data={[
+              { date: "Jan", books: 2 },
+              { date: "Feb", books: 3 },
+              { date: "Mar", books: 1 },
+              { date: "Apr", books: 2 },
+              { date: "Maj", books: 4 },
+            ]}
+            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+          >
             <CartesianGrid strokeDasharray="3 3" stroke="#4b5563" />
             <XAxis dataKey="date" stroke="#cbd5e1" />
             <YAxis allowDecimals={false} stroke="#cbd5e1" />
@@ -110,6 +154,25 @@ useEffect(() => {
             />
           </LineChart>
         </ResponsiveContainer>
+      </div>
+
+      {/* Reading Logs Section */}
+      <div className="mt-8">
+        <h2 className="text-2xl font-semibold mb-4">📚 Your Reading Progress</h2>
+        {readingLogs.length > 0 ? (
+          readingLogs.map(log =>
+            log.book ? (
+              <CurrentlyReadingBook
+                key={log.logId}
+                log={log}
+                onUpdateProgress={updatePageProgress}
+                onStatusChange={() => markAsRead(log.logId)}
+              />
+            ) : null
+          )
+        ) : (
+          <p className="text-sm text-gray-400">You have no books in progress yet.</p>
+        )}
       </div>
     </div>
   );

@@ -2,6 +2,7 @@
   "name": "bookbuddyfrontend",
   "version": "0.1.0",
   "private": true,
+  "proxy": "https://localhost:7199",
   "dependencies": {
     "-": "^0.0.1",
     "@emotion/react": "^11.13.0",

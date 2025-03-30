@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useUser } from '../components/common/Login/UserContext';
 import { endpoints } from '../endpoints';
+import { updateOrCreateLog } from '../utils/logHelpers';
 
 function BookDetailsPage() {
   const { id } = useParams(); // bookId
@@ -15,6 +16,7 @@ function BookDetailsPage() {
   const [currentPage, setCurrentPage] = useState('');
   const [status, setStatus] = useState('');
 
+  // Fetch book and reading log
   useEffect(() => {
     const fetchBook = async () => {
       try {
@@ -22,7 +24,7 @@ function BookDetailsPage() {
         setBook(bookRes.data);
         setStatus(bookRes.data.status);
       } catch (error) {
-        toast.error('Failed to fetch book details');
+        toast.error('❌ Failed to fetch book details');
       }
     };
 
@@ -30,7 +32,7 @@ function BookDetailsPage() {
       try {
         const logRes = await axios.get(`${endpoints.logs}/${id}?listType=reading`);
         setLog(logRes.data);
-        setCurrentPage(logRes.data.currentPage.toString());
+        setCurrentPage(logRes.data.currentPage?.toString() || '');
       } catch (error) {
         setLog(null);
         setCurrentPage('');
@@ -43,55 +45,30 @@ function BookDetailsPage() {
     }
   }, [id]);
 
+  // Save progress (new or updated log)
   const updatePage = async () => {
-    try {
-      if (!currentUser) {
-        toast.error('You must be logged in to update progress.');
-        return;
-      }
+    const updatedLog = await updateOrCreateLog({
+      book,
+      currentUser,
+      currentPage,
+      existingLog: log,
+      listType: 'reading'
+    });
 
-      const numericPage = Number(currentPage);
-      if (
-        isNaN(numericPage) ||
-        numericPage < 0 ||
-        (book && numericPage > book.noOfPages)
-      ) {
-        toast.error(`Please enter a number between 0 and ${book.noOfPages}`);
-        return;
-      }
-
-      if (log) {
-        await axios.put(`${endpoints.logs}/${log.logId}`, {
-          ...log,
-          currentPage: numericPage
-        });
-        toast.success('Page number updated!');
-      } else {
-        const res = await axios.post(endpoints.logs, {
-          bookId: book.bookId,
-          userId: currentUser.userId,
-          currentPage: numericPage,
-          noOfPages: book.noOfPages,
-          listType: 'reading'
-        });
-        toast.success('Log created and page number set!');
-        setLog(res.data);
-      }
-    } catch (error) {
-      toast.error('Failed to update or create log');
-    }
+    if (updatedLog) setLog(updatedLog);
   };
 
+  // Update status of the book (e.g. to 'read')
   const updateStatus = async () => {
     try {
       await axios.put(`${endpoints.books}/${book.bookId}`, {
         ...book,
-        status: status
+        status
       });
-      toast.success('Status updated!');
+      toast.success('✅ Status updated!');
       navigate(`/books?status=${status}`);
     } catch (error) {
-      toast.error('Failed to update status');
+      toast.error('❌ Failed to update status');
     }
   };
 
