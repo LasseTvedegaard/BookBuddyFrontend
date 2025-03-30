@@ -8,7 +8,7 @@ export default function HttpClient(baseURL) {
     },
   });
 
-  // Authorization-header automatisk med token
+  // Tilføj Authorization-header med token fra localStorage
   apiClient.interceptors.request.use((config) => {
     const token = localStorage.getItem("bookbuddy_token");
     if (token) {
@@ -17,7 +17,7 @@ export default function HttpClient(baseURL) {
     return config;
   });
 
-  //response/error-håndtering
+  // Håndter API-respons og fejl
   apiClient.interceptors.response.use(
     (response) => response.data,
     (error) => {
@@ -26,7 +26,6 @@ export default function HttpClient(baseURL) {
     }
   );
 
-  // 💡 API-metoder
   return {
     get(endpoint, params = {}) {
       return apiClient.get(endpoint, { params });

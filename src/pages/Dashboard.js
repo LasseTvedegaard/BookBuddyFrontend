@@ -15,6 +15,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import CurrentlyReadingBook from "./currentlyReading";
+import { startReading } from "../utils/logHelpers"; // ✅ import
 
 export default function Dashboard() {
   const { currentUser } = useUser();
@@ -25,6 +26,7 @@ export default function Dashboard() {
   const [currentlyReadingCount, setCurrentlyReadingCount] = useState(0);
   const [booksToReadCount, setBooksToReadCount] = useState(0);
   const [readingLogs, setReadingLogs] = useState([]);
+  const [toReadBooks, setToReadBooks] = useState([]); // 👈 ny
 
   const fetchCounts = async () => {
     try {
@@ -36,6 +38,15 @@ export default function Dashboard() {
       setBooksToReadCount(unreadBooks.length);
     } catch (error) {
       console.error("Error fetching book counts:", error);
+    }
+  };
+
+  const fetchToReadBooks = async () => {
+    try {
+      const books = await httpClient.get(`${endpoints.books}?status=unread`);
+      setToReadBooks(books);
+    } catch (error) {
+      console.error("Error fetching unread books:", error);
     }
   };
 
@@ -53,6 +64,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchCounts();
+    fetchToReadBooks();
   }, []);
 
   useEffect(() => {
@@ -68,25 +80,20 @@ export default function Dashboard() {
     if (!logToUpdate) return;
 
     try {
-      // 1. Opret ny læselog med "read"
       await httpClient.post(`${endpoints.logs}`, {
         bookId: logToUpdate.book.bookId,
         userId: logToUpdate.user.userId,
         currentPage: logToUpdate.currentPage,
         noOfPages: logToUpdate.noOfPages,
-        listType: "read", // 👈 denne værdi skal være korrekt
+        listType: "read",
       });
 
-      // 2. Opdater bogens status
       await httpClient.patch(
         `${endpoints.books}/status/${logToUpdate.book.bookId}`,
         `"read"`,
-        {
-          headers: { "Content-Type": "application/json" },
-        }
+        { headers: { "Content-Type": "application/json" } }
       );
 
-      // 3. Opdater visning
       await fetchLogs();
       await fetchCounts();
       toast.success("Book marked as read!");
@@ -102,6 +109,13 @@ export default function Dashboard() {
         log.logId === logId ? { ...log, currentPage: newPage } : log
       )
     );
+  };
+
+  const handleStartReading = async (book) => {
+    await startReading(book, currentUser);
+    await fetchLogs();
+    await fetchCounts();
+    await fetchToReadBooks();
   };
 
   return (
@@ -172,6 +186,44 @@ export default function Dashboard() {
           </LineChart>
         </ResponsiveContainer>
       </div>
+
+{/* Unread Books Section - Horizontal Scroll */}
+<div className="mb-12">
+  <h2 className="text-2xl font-semibold mb-4">📖 Books to Start Reading</h2>
+  {toReadBooks.length > 0 ? (
+    <>
+      <div className="flex gap-4 overflow-x-auto pb-2">
+        {toReadBooks.map((book) => (
+          <div
+            key={book.bookId}
+            className="min-w-[200px] bg-gray-700 rounded p-4 flex-shrink-0"
+          >
+            <p className="font-bold text-lg truncate">{book.title}</p>
+            <p className="text-sm text-gray-300 mb-2 truncate">By {book.author}</p>
+            <button
+              onClick={() => handleStartReading(book)}
+              className="mt-auto bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 w-full"
+            >
+              Start
+            </button>
+          </div>
+        ))}
+      </div>
+      <div className="mt-4 text-right">
+        <button
+          onClick={() => navigate("/books?status=unread")}
+          className="text-sm text-blue-400 hover:underline"
+        >
+          See all unread books →
+        </button>
+      </div>
+    </>
+  ) : (
+    <p className="text-sm text-gray-400">No unread books.</p>
+  )}
+</div>
+
+
 
       {/* Reading Logs Section */}
       <div className="mt-8">

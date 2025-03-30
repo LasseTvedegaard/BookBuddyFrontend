@@ -7,6 +7,8 @@ import Pagination from '../components/common/Pagination';
 import SearchComponent from '../components/common/SearchBar';
 import Modal from '../components/common/Modal';
 import { useUser } from "../components/common/Login/UserContext.js";
+import { toast } from "react-toastify";
+import { startReading } from "../utils/logHelpers"; // 👈 tilføjet
 
 const httpClient = new HttpClient(process.env.REACT_APP_API_URL);
 
@@ -81,6 +83,33 @@ function BookTable() {
     }
   };
 
+  const handleStatusChange = async (book, newStatus) => {
+    try {
+      // Opdater bogens status i backend
+      await httpClient.put(`${endpoints.books}/${book.bookId}`, {
+        ...book,
+        status: newStatus
+      });
+
+      // Hvis ny status er "reading", kald startReading()
+      if (newStatus === "reading" && currentUser) {
+        await startReading(book, currentUser);
+      }
+
+      // Opdater local state
+      setBooks(prev =>
+        prev.map(b =>
+          b.bookId === book.bookId ? { ...b, status: newStatus } : b
+        )
+      );
+
+      toast.success("Status updated!");
+    } catch (err) {
+      toast.error("Failed to update status.");
+      console.error(err);
+    }
+  };
+
   return (
     <div className="container mx-auto p-4 bg-ff_background_light dark:bg-ff_background_dark min-h-screen">
       <div className="pb-6 flex flex-col md:flex-row justify-between items-start md:items-center">
@@ -122,9 +151,9 @@ function BookTable() {
             <th className="px-6 py-4 w-[150px]">Book Type</th>
             <th className="px-6 py-4 w-[150px]">ISBN</th>
             <th className="px-6 py-4 w-[150px]">Location</th>
-            <th className="px-6 py-4 w-[120px]">Status</th>
-            <th className="px-6 py-4 w-[120px]">Image</th>
-            <th className="px-6 py-4 float-right">Details</th>
+            <th className="px-6 py-4 w-[150px]">Status</th>
+            <th className="px-6 py-4 w-[100px]">Image</th>
+            <th className="px-6 py-4">Details</th>
           </tr>
         </thead>
         <tbody>
@@ -136,15 +165,25 @@ function BookTable() {
                   index % 2 === 0 ? "ff-table-row-even" : "ff-table-row-odd"
                 } hover:bg-gray-100 dark:hover:bg-gray-700`}
               >
-                <td className="py-4 px-6 text-gray-900 dark:text-gray-300">{book.title || "N/A"}</td>
-                <td className="py-4 px-6 text-gray-900 dark:text-gray-300">{book.author || "N/A"}</td>
-                <td className="py-4 px-6 text-gray-900 dark:text-gray-300">{book.genre?.genreName || "N/A"}</td>
-                <td className="py-4 px-6 text-gray-900 dark:text-gray-300">{book.noOfPages || "N/A"}</td>
-                <td className="py-4 px-6 text-gray-900 dark:text-gray-300">{book.bookType || "N/A"}</td>
-                <td className="py-4 px-6 text-gray-900 dark:text-gray-300">{book.isbnNo || "N/A"}</td>
-                <td className="py-4 px-6 text-gray-900 dark:text-gray-300">{book.location?.locationName || "N/A"}</td>
-                <td className="py-4 px-6 text-gray-900 dark:text-gray-300">{book.status || "N/A"}</td>
-                <td className="py-4 px-6 text-gray-900 dark:text-gray-300">
+                <td className="py-4 px-6">{book.title}</td>
+                <td className="py-4 px-6">{book.author}</td>
+                <td className="py-4 px-6">{book.genre?.genreName}</td>
+                <td className="py-4 px-6">{book.noOfPages}</td>
+                <td className="py-4 px-6">{book.bookType}</td>
+                <td className="py-4 px-6">{book.isbnNo}</td>
+                <td className="py-4 px-6">{book.location?.locationName}</td>
+                <td className="py-4 px-6">
+                  <select
+                    value={book.status}
+                    onChange={(e) => handleStatusChange(book, e.target.value)}
+                    className="bg-gray-800 text-white px-2 py-1 rounded"
+                  >
+                    <option value="unread">Unread</option>
+                    <option value="reading">Reading</option>
+                    <option value="read">Read</option>
+                  </select>
+                </td>
+                <td className="py-4 px-6">
                   <img
                     src={book.imageURL || ""}
                     alt={book.title}
@@ -152,7 +191,7 @@ function BookTable() {
                     onClick={() => openModal(book.imageURL)}
                   />
                 </td>
-                <td className="py-4 mr-4 items-center justify-center float-right">
+                <td className="py-4 px-6 text-center">
                   <button onClick={() => handleDetailsClick(book.bookId)}>
                     <FiMoreHorizontal className="h-5 w-5 text-black dark:text-white" />
                   </button>
