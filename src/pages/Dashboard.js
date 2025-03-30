@@ -26,19 +26,20 @@ export default function Dashboard() {
   const [booksToReadCount, setBooksToReadCount] = useState(0);
   const [readingLogs, setReadingLogs] = useState([]);
 
+  const fetchCounts = async () => {
+    try {
+      const readBooks = await httpClient.get(`${endpoints.books}?status=read`);
+      const readingBooks = await httpClient.get(`${endpoints.books}?status=reading`);
+      const unreadBooks = await httpClient.get(`${endpoints.books}?status=unread`);
+      setBooksReadCount(readBooks.length);
+      setCurrentlyReadingCount(readingBooks.length);
+      setBooksToReadCount(unreadBooks.length);
+    } catch (error) {
+      console.error("Error fetching book counts:", error);
+    }
+  };
+
   useEffect(() => {
-    const fetchCounts = async () => {
-      try {
-        const readBooks = await httpClient.get(`${endpoints.books}?status=read`);
-        const readingBooks = await httpClient.get(`${endpoints.books}?status=reading`);
-        const unreadBooks = await httpClient.get(`${endpoints.books}?status=unread`);
-        setBooksReadCount(readBooks.length);
-        setCurrentlyReadingCount(readingBooks.length);
-        setBooksToReadCount(unreadBooks.length);
-      } catch (error) {
-        console.error("Error fetching book counts:", error);
-      }
-    };
     fetchCounts();
   }, []);
 
@@ -73,11 +74,20 @@ export default function Dashboard() {
         listType: "read"
       });
 
+      await httpClient.patch(
+        `${endpoints.books}/status/${logToUpdate.book.bookId}`,
+        `"read"`,
+        {
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+
       setReadingLogs(prevLogs => prevLogs.filter(log => log.logId !== logId));
+      await fetchCounts(); // 👈 Opdater tallene efter ændring
       toast.success("Book marked as read!");
     } catch (error) {
-      console.error("Error updating log status:", error);
-      toast.error("Failed to mark book as read.");
+      console.error("Error updating log or book status:", error);
+      toast.error("Fejl ved status-opdatering.");
     }
   };
 
