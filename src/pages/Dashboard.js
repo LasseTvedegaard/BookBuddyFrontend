@@ -56,11 +56,18 @@ export default function Dashboard() {
       const res = await httpClient.get(
         `${endpoints.logs}/user/${currentUser.userId}/latest?listType=reading`
       );
-      setReadingLogs(res);
+  
+      // 👉 Vis kun logs hvor bogen stadig er markeret som 'reading'
+      const filteredLogs = res.filter(
+        (log) => log.book?.status === "reading"
+      );
+  
+      setReadingLogs(filteredLogs);
     } catch (error) {
       console.error("Failed to fetch reading logs", error);
     }
   };
+  
 
   useEffect(() => {
     fetchCounts();

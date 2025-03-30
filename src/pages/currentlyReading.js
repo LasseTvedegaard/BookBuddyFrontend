@@ -18,7 +18,7 @@ function CurrentlyReadingBook({ log }) {
         userId: log.user.userId,
         currentPage: Number(currentPage),
         noOfPages: log.noOfPages,
-        listType: log.listType, // fx "reading"
+        listType: log.listType,
       });
       toast.success("Ny læselog oprettet!");
     } catch (error) {
@@ -27,13 +27,12 @@ function CurrentlyReadingBook({ log }) {
     }
     setUpdating(false);
   };
-  
 
   const handleStatusChange = async (newStatus) => {
     try {
       await httpClient.put(`${endpoints.books}/${log.book.bookId}`, {
         ...log.book,
-        status: newStatus
+        status: newStatus,
       });
       setStatus(newStatus);
       toast.success("Status opdateret!");
@@ -43,17 +42,29 @@ function CurrentlyReadingBook({ log }) {
     }
   };
 
+  const progress = Math.min((currentPage / log.noOfPages) * 100, 100);
+
   return (
     <div className="bg-gray-800 text-white p-4 mb-4 rounded-md shadow">
       <h3 className="text-lg font-bold">{log.book.title}</h3>
       <p>Af {log.book.author}</p>
       <p>Sidetal: {currentPage} / {log.noOfPages}</p>
 
+      {/* 📊 Progress bar */}
+      <div className="w-full bg-gray-700 rounded-full h-2.5 mt-2 mb-1">
+        <div
+          className="bg-yellow-400 h-2.5 rounded-full transition-all duration-300"
+          style={{ width: `${progress}%` }}
+        ></div>
+      </div>
+      <p className="text-xs text-gray-400 mb-2">{Math.round(progress)}%</p>
+
+      {/* 📥 Sidetal input */}
       <input
         type="number"
         value={currentPage}
         onChange={(e) => setCurrentPage(e.target.value)}
-        className="text-black px-2 py-1 mt-2"
+        className="text-black px-2 py-1 mt-1"
       />
       <button
         onClick={handlePageUpdate}
@@ -63,6 +74,7 @@ function CurrentlyReadingBook({ log }) {
         {updating ? "Opdaterer..." : "Gem side"}
       </button>
 
+      {/* 🔄 Status dropdown */}
       <div className="mt-2">
         <label htmlFor="status">Status: </label>
         <select
