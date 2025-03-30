@@ -13,21 +13,21 @@ function CurrentlyReadingBook({ log }) {
   const handlePageUpdate = async () => {
     setUpdating(true);
     try {
-      await httpClient.put(`${endpoints.logs}/${log.logId}`, {
-        logId: log.logId,
+      await httpClient.post(`${endpoints.logs}`, {
         bookId: log.book.bookId,
         userId: log.user.userId,
         currentPage: Number(currentPage),
         noOfPages: log.noOfPages,
-        listType: log.listType
+        listType: log.listType, // fx "reading"
       });
-      toast.success("Sidetal opdateret!");
+      toast.success("Ny læselog oprettet!");
     } catch (error) {
       console.error("Fejl ved opdatering af sidetal:", error);
       toast.error("Noget gik galt med sidetallet.");
     }
     setUpdating(false);
   };
+  
 
   const handleStatusChange = async (newStatus) => {
     try {

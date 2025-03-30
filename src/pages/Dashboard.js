@@ -39,20 +39,23 @@ export default function Dashboard() {
     }
   };
 
+  const fetchLogs = async () => {
+    if (!currentUser) return;
+    try {
+      const res = await httpClient.get(
+        `${endpoints.logs}/user/${currentUser.userId}/latest?listType=reading`
+      );
+      setReadingLogs(res);
+    } catch (error) {
+      console.error("Failed to fetch reading logs", error);
+    }
+  };
+
   useEffect(() => {
     fetchCounts();
   }, []);
 
   useEffect(() => {
-    const fetchLogs = async () => {
-      if (!currentUser) return;
-      try {
-        const res = await httpClient.get(`${endpoints.logs}/user/${currentUser.userId}/latest?listType=reading`);
-        setReadingLogs(res);
-      } catch (error) {
-        console.error("Failed to fetch reading logs", error);
-      }
-    };
     fetchLogs();
   }, [currentUser]);
 
@@ -61,29 +64,31 @@ export default function Dashboard() {
   };
 
   const markAsRead = async (logId) => {
-    const logToUpdate = readingLogs.find(log => log.logId === logId);
+    const logToUpdate = readingLogs.find((log) => log.logId === logId);
     if (!logToUpdate) return;
 
     try {
-      await httpClient.put(`${endpoints.logs}/${logId}`, {
-        logId: logToUpdate.logId,
+      // 1. Opret ny læselog med "read"
+      await httpClient.post(`${endpoints.logs}`, {
         bookId: logToUpdate.book.bookId,
         userId: logToUpdate.user.userId,
         currentPage: logToUpdate.currentPage,
         noOfPages: logToUpdate.noOfPages,
-        listType: "read"
+        listType: "read", // 👈 denne værdi skal være korrekt
       });
 
+      // 2. Opdater bogens status
       await httpClient.patch(
         `${endpoints.books}/status/${logToUpdate.book.bookId}`,
         `"read"`,
         {
-          headers: { "Content-Type": "application/json" }
+          headers: { "Content-Type": "application/json" },
         }
       );
 
-      setReadingLogs(prevLogs => prevLogs.filter(log => log.logId !== logId));
-      await fetchCounts(); // 👈 Opdater tallene efter ændring
+      // 3. Opdater visning
+      await fetchLogs();
+      await fetchCounts();
       toast.success("Book marked as read!");
     } catch (error) {
       console.error("Error updating log or book status:", error);
@@ -92,8 +97,8 @@ export default function Dashboard() {
   };
 
   const updatePageProgress = (logId, newPage) => {
-    setReadingLogs(prev =>
-      prev.map(log =>
+    setReadingLogs((prev) =>
+      prev.map((log) =>
         log.logId === logId ? { ...log, currentPage: newPage } : log
       )
     );
@@ -132,7 +137,9 @@ export default function Dashboard() {
 
       {/* Reading Graph */}
       <div className="bg-ff_bg_continer_dark p-6 rounded-lg shadow text-ff_text_light mb-10">
-        <h2 className="text-2xl font-semibold mb-4">📈 Reading Progress Over Time</h2>
+        <h2 className="text-2xl font-semibold mb-4">
+          📈 Reading Progress Over Time
+        </h2>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart
             data={[
@@ -170,7 +177,7 @@ export default function Dashboard() {
       <div className="mt-8">
         <h2 className="text-2xl font-semibold mb-4">📚 Your Reading Progress</h2>
         {readingLogs.length > 0 ? (
-          readingLogs.map(log =>
+          readingLogs.map((log) =>
             log.book ? (
               <CurrentlyReadingBook
                 key={log.logId}
@@ -181,7 +188,9 @@ export default function Dashboard() {
             ) : null
           )
         ) : (
-          <p className="text-sm text-gray-400">You have no books in progress yet.</p>
+          <p className="text-sm text-gray-400">
+            You have no books in progress yet.
+          </p>
         )}
       </div>
     </div>
