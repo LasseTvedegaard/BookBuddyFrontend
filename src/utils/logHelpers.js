@@ -68,7 +68,7 @@ export const updateOrCreateLog = async ({
       });
 
       toast.success("Progress created!");
-      return res.data; // 👈 Dette er ændringen
+      return res.data;
     }
   } catch (error) {
     console.error("❌ Failed to update/create log:", error.response?.data || error.message);
