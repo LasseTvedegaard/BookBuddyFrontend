@@ -1,0 +1,15 @@
+# Brug officiel Node-billede
+FROM node:20
+
+# Sæt arbejdsmappen
+WORKDIR /app
+
+# Installer afhængigheder først for hurtigere builds (og cache)
+COPY package*.json ./
+RUN npm install
+
+# Kopiér resten af frontend-filerne ind (fallback, selvom du alligevel moun’er i dev)
+COPY . .
+
+# Start dev-server (med hot reload)
+CMD ["npm", "start"]
