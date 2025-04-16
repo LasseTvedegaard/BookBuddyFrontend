@@ -5,6 +5,7 @@ import {
   showLoadingToast,
   updateToast,
 } from "../Toast";
+console.log("🔍 API URL (REACT_APP_API_URL):", process.env.REACT_APP_API_URL);
 
 const baseUrl = process.env.REACT_APP_API_URL;
 

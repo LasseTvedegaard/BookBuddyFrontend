@@ -4,12 +4,16 @@ FROM node:20
 # Sæt arbejdsmappen
 WORKDIR /app
 
-# Installer afhængigheder først for hurtigere builds (og cache)
+# 👇 Gør build-arg tilgængelig som miljøvariabel
+ARG REACT_APP_API_URL
+ENV REACT_APP_API_URL=$REACT_APP_API_URL
+
+# Installer afhængigheder
 COPY package*.json ./
 RUN npm install
 
-# Kopiér resten af frontend-filerne ind (fallback, selvom du alligevel moun’er i dev)
+# Kopiér resten (fallback hvis volume ikke mountes)
 COPY . .
 
-# Start dev-server (med hot reload)
+# Start React dev-server (med hot reload)
 CMD ["npm", "start"]
