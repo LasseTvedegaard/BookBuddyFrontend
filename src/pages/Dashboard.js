@@ -135,7 +135,57 @@ export default function Dashboard() {
         Velkommen, {currentUser?.firstName || currentUser?.userId} 👋
       </h1>
 
-      {/* resten af JSX er uændret */}
+      {/* Stat cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div onClick={() => goToFilteredBooks("read")} className="cursor-pointer bg-yellow-400 text-black rounded-lg p-4 text-center">
+          <h3>Books read</h3>
+          <p className="text-4xl">{booksReadCount}</p>
+        </div>
+        <div onClick={() => goToFilteredBooks("reading")} className="cursor-pointer bg-gray-700 text-white rounded-lg p-4 text-center">
+          <h3>Currently reading</h3>
+          <p className="text-4xl">{currentlyReadingCount}</p>
+        </div>
+        <div onClick={() => goToFilteredBooks("unread")} className="cursor-pointer bg-blue-700 text-white rounded-lg p-4 text-center">
+          <h3>Books to read</h3>
+          <p className="text-4xl">{booksToReadCount}</p>
+        </div>
+      </div>
+
+      {/* Reading graph */}
+      <ResponsiveContainer width="100%" height={250}>
+        <LineChart data={readingLogs.map((l, i) => ({ index: i + 1, pages: l.currentPage }))}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="index" />
+          <YAxis />
+          <Tooltip />
+          <Line type="monotone" dataKey="pages" stroke="#e6d064" />
+        </LineChart>
+      </ResponsiveContainer>
+
+      {/* Books to start */}
+      <div className="flex gap-4 overflow-x-auto my-6">
+        {toReadBooks.map((book) => (
+          <div key={book.bookId} className="min-w-[200px] bg-gray-700 p-4 rounded">
+            <p className="font-bold">{book.title}</p>
+            <button
+              onClick={() => handleStartReading(book)}
+              className="mt-2 bg-blue-500 px-3 py-1 rounded"
+            >
+              Start
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* Reading logs */}
+      {readingLogs.map((log) => (
+        <CurrentlyReadingBook
+          key={log.logId}
+          log={log}
+          onUpdateProgress={updatePageProgress}
+          onStatusChange={() => markAsRead(log.logId)}
+        />
+      ))}
     </div>
   );
 }
