@@ -83,36 +83,31 @@ function BookTable() {
     }
   };
 
-  const handleStatusChange = async (book, newStatus) => {
-    try {
-      await httpClient.patch(
-        `${endpoints.books}/status/${book.bookId}`,
-        `"${newStatus}"`, // 👈 raw JSON string
-        {
-          headers: {
-            "Content-Type": "application/json"
-          }
-        }
-      );
+ const handleStatusChange = async (book, newStatus) => {
+  try {
+    await httpClient.put(
+      `${endpoints.books}/${book.bookId}/status`,
+      { status: newStatus }
+    );
 
-      if (newStatus === "reading" && currentUser) {
-        await startReading(book, currentUser);
-      }
-
-      setBooks(prev =>
-        prev.map(b =>
-          b.bookId === book.bookId
-            ? { ...b, status: newStatus }
-            : b
-        )
-      );
-
-      toast.success("Status updated!");
-    } catch (err) {
-      toast.error("Failed to update status.");
-      console.error(err);
+    if (newStatus === "reading" && currentUser) {
+      await startReading(book, currentUser);
     }
-  };
+
+    setBooks(prev =>
+      prev.map(b =>
+        b.bookId === book.bookId
+          ? { ...b, status: newStatus }
+          : b
+      )
+    );
+
+    toast.success("Status updated!");
+  } catch (err) {
+    toast.error("Failed to update status.");
+    console.error(err);
+  }
+};
 
 
   return (
