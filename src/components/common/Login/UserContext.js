@@ -30,7 +30,7 @@ export const UserProvider = ({ children }) => {
     clearTimeout(logoutTimer);
   }, []);
 
-  // 🧠 Beregn logout-tidspunkt fra token
+  // Beregn logout-tidspunkt fra token
   const scheduleAutoLogout = useCallback(
     (token) => {
       try {
@@ -59,7 +59,7 @@ export const UserProvider = ({ children }) => {
     scheduleAutoLogout(token);
   };
 
-  // ⏱ Automatisk logout ved refresh
+  // Automatisk logout ved refresh
   useEffect(() => {
     if (token) {
       scheduleAutoLogout(token);

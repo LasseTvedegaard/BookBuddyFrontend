@@ -8,7 +8,7 @@ import SearchComponent from '../components/common/SearchBar';
 import Modal from '../components/common/Modal';
 import { useUser } from "../components/common/Login/UserContext.js";
 import { toast } from "react-toastify";
-import { startReading } from "../utils/logHelpers"; // 👈 tilføjet
+import { startReading } from "../utils/logHelpers"; 
 
 const httpClient = new HttpClient(process.env.REACT_APP_API_URL);
 
@@ -84,31 +84,33 @@ function BookTable() {
   };
 
   const handleStatusChange = async (book, newStatus) => {
-    try {
-      // Opdater bogens status i backend
-      await httpClient.put(`${endpoints.books}/${book.bookId}`, {
-        ...book,
-        status: newStatus
-      });
+  try {
+    // ✅ Opdater KUN status i backend
+    await httpClient.put(
+      `${endpoints.books}/${book.bookId}/status`,
+      { status: newStatus }
+    );
 
-      // Hvis ny status er "reading", kald startReading()
-      if (newStatus === "reading" && currentUser) {
-        await startReading(book, currentUser);
-      }
-
-      // Opdater local state
-      setBooks(prev =>
-        prev.map(b =>
-          b.bookId === book.bookId ? { ...b, status: newStatus } : b
-        )
-      );
-
-      toast.success("Status updated!");
-    } catch (err) {
-      toast.error("Failed to update status.");
-      console.error(err);
+    // ✅ Log reading-start
+    if (newStatus === "reading" && currentUser) {
+      await startReading(book, currentUser);
     }
-  };
+
+    // ✅ Opdater lokal state
+    setBooks(prev =>
+      prev.map(b =>
+        b.bookId === book.bookId
+          ? { ...b, status: newStatus }
+          : b
+      )
+    );
+
+    toast.success("Status updated!");
+  } catch (err) {
+    toast.error("Failed to update status.");
+    console.error(err);
+  }
+};
 
   return (
     <div className="container mx-auto p-4 bg-ff_background_light dark:bg-ff_background_dark min-h-screen">
