@@ -84,33 +84,36 @@ function BookTable() {
   };
 
   const handleStatusChange = async (book, newStatus) => {
-  try {
-    // ✅ Opdater KUN status i backend
-    await httpClient.put(
-      `${endpoints.books}/${book.bookId}/status`,
-      { status: newStatus }
-    );
+    try {
+      await httpClient.patch(
+        `${endpoints.books}/status/${book.bookId}`,
+        `"${newStatus}"`, // 👈 raw JSON string
+        {
+          headers: {
+            "Content-Type": "application/json"
+          }
+        }
+      );
 
-    // ✅ Log reading-start
-    if (newStatus === "reading" && currentUser) {
-      await startReading(book, currentUser);
+      if (newStatus === "reading" && currentUser) {
+        await startReading(book, currentUser);
+      }
+
+      setBooks(prev =>
+        prev.map(b =>
+          b.bookId === book.bookId
+            ? { ...b, status: newStatus }
+            : b
+        )
+      );
+
+      toast.success("Status updated!");
+    } catch (err) {
+      toast.error("Failed to update status.");
+      console.error(err);
     }
+  };
 
-    // ✅ Opdater lokal state
-    setBooks(prev =>
-      prev.map(b =>
-        b.bookId === book.bookId
-          ? { ...b, status: newStatus }
-          : b
-      )
-    );
-
-    toast.success("Status updated!");
-  } catch (err) {
-    toast.error("Failed to update status.");
-    console.error(err);
-  }
-};
 
   return (
     <div className="container mx-auto p-4 bg-ff_background_light dark:bg-ff_background_dark min-h-screen">
