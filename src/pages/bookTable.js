@@ -84,15 +84,12 @@ function BookTable() {
   };
 
  const handleStatusChange = async (book, newStatus) => {
+  // Status-opdatering (den vigtige del)
   try {
     await httpClient.put(
       `${endpoints.books}/${book.bookId}/status`,
       { status: newStatus }
     );
-
-    if (newStatus === "reading" && currentUser) {
-      await startReading(book, currentUser);
-    }
 
     setBooks(prev =>
       prev.map(b =>
@@ -106,8 +103,20 @@ function BookTable() {
   } catch (err) {
     toast.error("Failed to update status.");
     console.error(err);
+    return; 
+  }
+
+  // Reading-log (sekundær, må gerne fejle)
+  if (newStatus === "reading" && currentUser) {
+    try {
+      await startReading(book, currentUser);
+    } catch (err) {
+      console.warn("Reading log failed", err);
+      // ingen toast – status ER allerede opdateret
+    }
   }
 };
+
 
 
   return (
