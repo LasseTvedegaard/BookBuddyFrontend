@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useUser } from "./UserContext";
-import { showLoadingToast, updateToast } from "../Toast";
+import {
+  showLoadingToast,
+  updateToast,
+} from "../Toast";
 
 console.log("API URL (REACT_APP_API_URL):", process.env.REACT_APP_API_URL);
 
@@ -30,9 +33,6 @@ export default function UserAuthForm() {
     setSuccess(false);
   };
 
-  // -------------------------
-  // LOGIN (GET by email)
-  // -------------------------
   const handleLogin = async (e) => {
     e.preventDefault();
     setError(null);
@@ -40,35 +40,32 @@ export default function UserAuthForm() {
     const toastId = showLoadingToast("Logger ind...");
 
     try {
-      const res = await fetch(
-        `${baseUrl}/api/User/email/${encodeURIComponent(loginEmail)}`,
-        {
-          method: "GET",
-          credentials: "include",
-        }
-      );
+      const res = await fetch(`${baseUrl}/api/Auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", 
+        body: JSON.stringify({ email: loginEmail }),
+      });
 
-      if (!res.ok) {
-        updateToast(toastId, "Bruger ikke fundet", "error");
-        return;
+      const data = await res.json();
+
+      if (res.ok) {
+        login(data.user, data.token);
+        updateToast(toastId, "Login gennemført", "success", "login-success");
+        navigate(from, { replace: true });
+      } else {
+        updateToast(
+          toastId,
+          data.message || "Login mislykkedes",
+          "error"
+        );
       }
-
-      const user = await res.json();
-
-      // Simpelt login (ingen token endnu)
-      login(user, null);
-
-      updateToast(toastId, "Login gennemført", "success", "login-success");
-      navigate(from, { replace: true });
     } catch (err) {
       console.error("Login error:", err);
       updateToast(toastId, "Fejl under login", "error");
     }
   };
 
-  // -------------------------
-  // REGISTER (POST /api/User)
-  // -------------------------
   const handleRegister = async (e) => {
     e.preventDefault();
     setError(null);
@@ -77,28 +74,32 @@ export default function UserAuthForm() {
     const toastId = showLoadingToast("Opretter bruger...");
 
     try {
-      const res = await fetch(`${baseUrl}/api/User`, {
+      const res = await fetch(`${baseUrl}/api/Auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
+        credentials: "include", 
         body: JSON.stringify(form),
       });
 
-      if (!res.ok) {
-        updateToast(toastId, "Brugeroprettelse mislykkedes", "error");
-        return;
+      const data = await res.json();
+
+      if (res.ok) {
+        updateToast(
+          toastId,
+          "Bruger oprettet! Du kan nu logge ind.",
+          "success"
+        );
+        setSuccess(true);
+        setIsLogin(true);
+        setLoginEmail(form.email);
+        setForm({ email: "", firstName: "", lastName: "" });
+      } else {
+        updateToast(
+          toastId,
+          data.message || "Brugeroprettelse mislykkedes",
+          "error"
+        );
       }
-
-      updateToast(
-        toastId,
-        "Bruger oprettet! Du kan nu logge ind.",
-        "success"
-      );
-
-      setSuccess(true);
-      setIsLogin(true);
-      setLoginEmail(form.email);
-      setForm({ email: "", firstName: "", lastName: "" });
     } catch (err) {
       console.error("Register error:", err);
       updateToast(toastId, "Fejl under oprettelse", "error");
