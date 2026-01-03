@@ -37,17 +37,15 @@ export default function Dashboard() {
   // -----------------------------
   const fetchCounts = useCallback(async () => {
     try {
-      const readBooks = await httpClient.get(`${endpoints.books}?status=read`);
-      const readingBooks = await httpClient.get(
-        `${endpoints.books}?status=reading`
-      );
-      const unreadBooks = await httpClient.get(
-        `${endpoints.books}?status=unread`
-      );
+      const [read, reading, unread] = await Promise.all([
+        httpClient.get(`${endpoints.books}?status=read`),
+        httpClient.get(`${endpoints.books}?status=reading`),
+        httpClient.get(`${endpoints.books}?status=unread`)
+      ]);
 
-      setBooksReadCount(readBooks.length);
-      setCurrentlyReadingCount(readingBooks.length);
-      setBooksToReadCount(unreadBooks.length);
+      setBooksReadCount(read.length);
+      setCurrentlyReadingCount(reading.length);
+      setBooksToReadCount(unread.length);
     } catch (error) {
       console.error("Error fetching book counts:", error);
     }
@@ -82,14 +80,17 @@ export default function Dashboard() {
     }
   }, [httpClient, currentUser]);
 
+  // -----------------------------
+  // EFFECTS
+  // -----------------------------
   useEffect(() => {
     fetchCounts();
     fetchToReadBooks();
   }, [fetchCounts, fetchToReadBooks]);
 
   useEffect(() => {
-    fetchLogs();
-  }, [fetchLogs]);
+    if (currentUser) fetchLogs();
+  }, [currentUser, fetchLogs]);
 
   // -----------------------------
   // NAVIGATION
@@ -106,7 +107,7 @@ export default function Dashboard() {
     if (!log) return;
 
     try {
-      // ➕ Opret nyt log-entry (read)
+      // ➕ nyt log-entry: read (JWT /me)
       await httpClient.post(`${endpoints.logs}`, {
         bookId: log.book.bookId,
         currentPage: log.noOfPages,
@@ -114,15 +115,14 @@ export default function Dashboard() {
         listType: "read",
       });
 
-      // 🔁 Opdater bog-status
+      // 🔁 opdater bog-status
       await httpClient.patch(
         `${endpoints.books}/status/${log.book.bookId}`,
         `"read"`,
         { headers: { "Content-Type": "application/json" } }
       );
 
-      await fetchLogs();
-      await fetchCounts();
+      await Promise.all([fetchLogs(), fetchCounts()]);
       toast.success("Book marked as read!");
     } catch (error) {
       console.error("Error marking book as read:", error);
@@ -131,7 +131,7 @@ export default function Dashboard() {
   };
 
   // -----------------------------
-  // UPDATE PAGE PROGRESS (UI-only)
+  // UPDATE PAGE PROGRESS (UI only)
   // -----------------------------
   const updatePageProgress = (logId, newPage) => {
     setReadingLogs((prev) =>
@@ -146,10 +146,12 @@ export default function Dashboard() {
   // -----------------------------
   const handleStartReading = async (book) => {
     try {
-      await startReading(book);
-      await fetchLogs();
-      await fetchCounts();
-      await fetchToReadBooks();
+      await startReading(book); // bruger JWT /me
+      await Promise.all([
+        fetchLogs(),
+        fetchCounts(),
+        fetchToReadBooks()
+      ]);
     } catch (error) {
       console.error("Error starting reading:", error);
       toast.error("Kunne ikke starte læsning.");
@@ -165,7 +167,7 @@ export default function Dashboard() {
         Velkommen, {currentUser?.firstName || "læser"} 👋
       </h1>
 
-      {/* Stat cards */}
+      {/* STAT CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <div
           onClick={() => goToFilteredBooks("read")}
@@ -192,7 +194,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Reading graph */}
+      {/* READING GRAPH */}
       {readingLogs.length > 0 && (
         <ResponsiveContainer width="100%" height={250}>
           <LineChart
@@ -210,7 +212,7 @@ export default function Dashboard() {
         </ResponsiveContainer>
       )}
 
-      {/* Books to start */}
+      {/* BOOKS TO START */}
       <div className="flex gap-4 overflow-x-auto my-6">
         {toReadBooks.map((book) => (
           <div key={book.bookId} className="min-w-[200px] bg-gray-700 p-4 rounded">
@@ -225,7 +227,7 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* Reading logs */}
+      {/* CURRENTLY READING */}
       {readingLogs.map((log) => (
         <CurrentlyReadingBook
           key={log.logId}
