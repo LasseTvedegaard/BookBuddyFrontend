@@ -43,7 +43,7 @@ export default function UserAuthForm() {
       const res = await fetch(`${baseUrl}/api/Auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include", // 🔑 KRITISK
+        credentials: "include", 
         body: JSON.stringify({ email: loginEmail }),
       });
 
@@ -77,7 +77,7 @@ export default function UserAuthForm() {
       const res = await fetch(`${baseUrl}/api/Auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include", // 🔑 KRITISK
+        credentials: "include", 
         body: JSON.stringify(form),
       });
 
