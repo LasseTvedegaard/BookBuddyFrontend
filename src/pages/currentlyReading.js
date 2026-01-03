@@ -4,8 +4,12 @@ import HttpClient from "../services/HttpClient";
 import { endpoints } from "../endpoints";
 
 function CurrentlyReadingBook({ log }) {
-  const [currentPage, setCurrentPage] = useState(log.currentPage);
-  const [status, setStatus] = useState(log.book.status);
+  if (!log || !log.book) {
+    return null; // 👈 VIGTIG
+  }
+
+  const [currentPage, setCurrentPage] = useState(log.currentPage ?? 0);
+  const [status, setStatus] = useState(log.book?.status ?? "reading");
   const [updating, setUpdating] = useState(false);
 
   const httpClient = new HttpClient(process.env.REACT_APP_API_URL);
@@ -15,7 +19,7 @@ function CurrentlyReadingBook({ log }) {
     try {
       await httpClient.post(`${endpoints.logs}`, {
         bookId: log.book.bookId,
-        userId: log.user.userId,
+        userId: log.userId,          
         currentPage: Number(currentPage),
         noOfPages: log.noOfPages,
         listType: log.listType,
@@ -42,7 +46,10 @@ function CurrentlyReadingBook({ log }) {
     }
   };
 
-  const progress = Math.min((currentPage / log.noOfPages) * 100, 100);
+  const progress = Math.min(
+    ((currentPage || 0) / (log.noOfPages || 1)) * 100,
+    100
+  );
 
   return (
     <div className="bg-gray-800 text-white p-4 mb-4 rounded-md shadow">
@@ -50,16 +57,16 @@ function CurrentlyReadingBook({ log }) {
       <p>Af {log.book.author}</p>
       <p>Sidetal: {currentPage} / {log.noOfPages}</p>
 
-      {/* 📊 Progress bar */}
       <div className="w-full bg-gray-700 rounded-full h-2.5 mt-2 mb-1">
         <div
           className="bg-yellow-400 h-2.5 rounded-full transition-all duration-300"
           style={{ width: `${progress}%` }}
-        ></div>
+        />
       </div>
-      <p className="text-xs text-gray-400 mb-2">{Math.round(progress)}%</p>
+      <p className="text-xs text-gray-400 mb-2">
+        {Math.round(progress)}%
+      </p>
 
-      {/* 📥 Sidetal input */}
       <input
         type="number"
         value={currentPage}
@@ -74,7 +81,6 @@ function CurrentlyReadingBook({ log }) {
         {updating ? "Opdaterer..." : "Gem side"}
       </button>
 
-      {/* 🔄 Status dropdown */}
       <div className="mt-2">
         <label htmlFor="status">Status: </label>
         <select
