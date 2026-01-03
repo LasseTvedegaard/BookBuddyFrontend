@@ -4,13 +4,15 @@ import HttpClient from "../services/HttpClient";
 import { endpoints } from "../endpoints";
 
 function CurrentlyReadingBook({ log }) {
-  if (!log || !log.book) {
-    return null; // 👈 VIGTIG
-  }
-
-  const [currentPage, setCurrentPage] = useState(log.currentPage ?? 0);
-  const [status, setStatus] = useState(log.book?.status ?? "reading");
+  // ✅ Hooks SKAL altid kaldes
+  const [currentPage, setCurrentPage] = useState(log?.currentPage ?? 0);
+  const [status, setStatus] = useState(log?.book?.status ?? "reading");
   const [updating, setUpdating] = useState(false);
+
+  // ✅ Early return EFTER hooks
+  if (!log || !log.book) {
+    return null;
+  }
 
   const httpClient = new HttpClient(process.env.REACT_APP_API_URL);
 
@@ -19,7 +21,7 @@ function CurrentlyReadingBook({ log }) {
     try {
       await httpClient.post(`${endpoints.logs}`, {
         bookId: log.book.bookId,
-        userId: log.userId,          
+        userId: log.userId,          // 👈 korrekt
         currentPage: Number(currentPage),
         noOfPages: log.noOfPages,
         listType: log.listType,
@@ -63,6 +65,7 @@ function CurrentlyReadingBook({ log }) {
           style={{ width: `${progress}%` }}
         />
       </div>
+
       <p className="text-xs text-gray-400 mb-2">
         {Math.round(progress)}%
       </p>
