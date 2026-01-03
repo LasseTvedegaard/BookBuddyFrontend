@@ -32,11 +32,18 @@ export default function Dashboard() {
   const [readingLogs, setReadingLogs] = useState([]);
   const [toReadBooks, setToReadBooks] = useState([]);
 
+  // -----------------------------
+  // FETCH COUNTS
+  // -----------------------------
   const fetchCounts = useCallback(async () => {
     try {
       const readBooks = await httpClient.get(`${endpoints.books}?status=read`);
-      const readingBooks = await httpClient.get(`${endpoints.books}?status=reading`);
-      const unreadBooks = await httpClient.get(`${endpoints.books}?status=unread`);
+      const readingBooks = await httpClient.get(
+        `${endpoints.books}?status=reading`
+      );
+      const unreadBooks = await httpClient.get(
+        `${endpoints.books}?status=unread`
+      );
 
       setBooksReadCount(readBooks.length);
       setCurrentlyReadingCount(readingBooks.length);
@@ -46,6 +53,9 @@ export default function Dashboard() {
     }
   }, [httpClient]);
 
+  // -----------------------------
+  // FETCH UNREAD BOOKS
+  // -----------------------------
   const fetchToReadBooks = useCallback(async () => {
     try {
       const books = await httpClient.get(`${endpoints.books}?status=unread`);
@@ -55,19 +65,18 @@ export default function Dashboard() {
     }
   }, [httpClient]);
 
+  // -----------------------------
+  // FETCH READING LOGS (JWT /me)
+  // -----------------------------
   const fetchLogs = useCallback(async () => {
     if (!currentUser) return;
 
     try {
-      const res = await httpClient.get(
-        `${endpoints.logs}/user/${currentUser.userId}/latest?listType=reading`
+      const logs = await httpClient.get(
+        `${endpoints.logs}/me/latest?listType=reading`
       );
 
-      const filteredLogs = res.filter(
-        (log) => log.book?.status === "reading"
-      );
-
-      setReadingLogs(filteredLogs);
+      setReadingLogs(logs);
     } catch (error) {
       console.error("Failed to fetch reading logs", error);
     }
@@ -82,25 +91,32 @@ export default function Dashboard() {
     fetchLogs();
   }, [fetchLogs]);
 
+  // -----------------------------
+  // NAVIGATION
+  // -----------------------------
   const goToFilteredBooks = (status) => {
     navigate(`/books?status=${status}`);
   };
 
+  // -----------------------------
+  // MARK BOOK AS READ
+  // -----------------------------
   const markAsRead = async (logId) => {
-    const logToUpdate = readingLogs.find((log) => log.logId === logId);
-    if (!logToUpdate) return;
+    const log = readingLogs.find((l) => l.logId === logId);
+    if (!log) return;
 
     try {
+      // ➕ Opret nyt log-entry (read)
       await httpClient.post(`${endpoints.logs}`, {
-        bookId: logToUpdate.book.bookId,
-        userId: logToUpdate.user.userId,
-        currentPage: logToUpdate.currentPage,
-        noOfPages: logToUpdate.noOfPages,
+        bookId: log.book.bookId,
+        currentPage: log.noOfPages,
+        noOfPages: log.noOfPages,
         listType: "read",
       });
 
+      // 🔁 Opdater bog-status
       await httpClient.patch(
-        `${endpoints.books}/status/${logToUpdate.book.bookId}`,
+        `${endpoints.books}/status/${log.book.bookId}`,
         `"read"`,
         { headers: { "Content-Type": "application/json" } }
       );
@@ -109,11 +125,14 @@ export default function Dashboard() {
       await fetchCounts();
       toast.success("Book marked as read!");
     } catch (error) {
-      console.error("Error updating log or book status:", error);
+      console.error("Error marking book as read:", error);
       toast.error("Fejl ved status-opdatering.");
     }
   };
 
+  // -----------------------------
+  // UPDATE PAGE PROGRESS (UI-only)
+  // -----------------------------
   const updatePageProgress = (logId, newPage) => {
     setReadingLogs((prev) =>
       prev.map((log) =>
@@ -122,45 +141,74 @@ export default function Dashboard() {
     );
   };
 
+  // -----------------------------
+  // START READING
+  // -----------------------------
   const handleStartReading = async (book) => {
-    await startReading(book, currentUser);
-    await fetchLogs();
-    await fetchCounts();
-    await fetchToReadBooks();
+    try {
+      await startReading(book);
+      await fetchLogs();
+      await fetchCounts();
+      await fetchToReadBooks();
+    } catch (error) {
+      console.error("Error starting reading:", error);
+      toast.error("Kunne ikke starte læsning.");
+    }
   };
 
+  // -----------------------------
+  // RENDER
+  // -----------------------------
   return (
     <div className="p-6 text-ff_text_light">
       <h1 className="text-3xl font-semibold mb-6">
-        Velkommen, {currentUser?.firstName || currentUser?.userId} 👋
+        Velkommen, {currentUser?.firstName || "læser"} 👋
       </h1>
 
       {/* Stat cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <div onClick={() => goToFilteredBooks("read")} className="cursor-pointer bg-yellow-400 text-black rounded-lg p-4 text-center">
+        <div
+          onClick={() => goToFilteredBooks("read")}
+          className="cursor-pointer bg-yellow-400 text-black rounded-lg p-4 text-center"
+        >
           <h3>Books read</h3>
           <p className="text-4xl">{booksReadCount}</p>
         </div>
-        <div onClick={() => goToFilteredBooks("reading")} className="cursor-pointer bg-gray-700 text-white rounded-lg p-4 text-center">
+
+        <div
+          onClick={() => goToFilteredBooks("reading")}
+          className="cursor-pointer bg-gray-700 text-white rounded-lg p-4 text-center"
+        >
           <h3>Currently reading</h3>
           <p className="text-4xl">{currentlyReadingCount}</p>
         </div>
-        <div onClick={() => goToFilteredBooks("unread")} className="cursor-pointer bg-blue-700 text-white rounded-lg p-4 text-center">
+
+        <div
+          onClick={() => goToFilteredBooks("unread")}
+          className="cursor-pointer bg-blue-700 text-white rounded-lg p-4 text-center"
+        >
           <h3>Books to read</h3>
           <p className="text-4xl">{booksToReadCount}</p>
         </div>
       </div>
 
       {/* Reading graph */}
-      <ResponsiveContainer width="100%" height={250}>
-        <LineChart data={readingLogs.map((l, i) => ({ index: i + 1, pages: l.currentPage }))}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="index" />
-          <YAxis />
-          <Tooltip />
-          <Line type="monotone" dataKey="pages" stroke="#e6d064" />
-        </LineChart>
-      </ResponsiveContainer>
+      {readingLogs.length > 0 && (
+        <ResponsiveContainer width="100%" height={250}>
+          <LineChart
+            data={readingLogs.map((l, i) => ({
+              index: i + 1,
+              pages: l.currentPage,
+            }))}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="index" />
+            <YAxis />
+            <Tooltip />
+            <Line type="monotone" dataKey="pages" stroke="#e6d064" />
+          </LineChart>
+        </ResponsiveContainer>
+      )}
 
       {/* Books to start */}
       <div className="flex gap-4 overflow-x-auto my-6">
