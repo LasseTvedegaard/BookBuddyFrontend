@@ -5,6 +5,7 @@ import {
   showLoadingToast,
   updateToast,
 } from "../Toast";
+
 console.log("API URL (REACT_APP_API_URL):", process.env.REACT_APP_API_URL);
 
 const baseUrl = process.env.REACT_APP_API_URL;
@@ -39,9 +40,10 @@ export default function UserAuthForm() {
     const toastId = showLoadingToast("Logger ind...");
 
     try {
-      const res = await fetch(`${baseUrl}/auth/login`, {
+      const res = await fetch(`${baseUrl}/api/Auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include", // 🔑 KRITISK
         body: JSON.stringify({ email: loginEmail }),
       });
 
@@ -52,7 +54,11 @@ export default function UserAuthForm() {
         updateToast(toastId, "Login gennemført", "success", "login-success");
         navigate(from, { replace: true });
       } else {
-        updateToast(toastId, data.message || "Login mislykkedes", "error");
+        updateToast(
+          toastId,
+          data.message || "Login mislykkedes",
+          "error"
+        );
       }
     } catch (err) {
       console.error("Login error:", err);
@@ -68,22 +74,31 @@ export default function UserAuthForm() {
     const toastId = showLoadingToast("Opretter bruger...");
 
     try {
-      const res = await fetch(`${baseUrl}/auth/register`, {
+      const res = await fetch(`${baseUrl}/api/Auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include", // 🔑 KRITISK
         body: JSON.stringify(form),
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        updateToast(toastId, "Bruger oprettet! Du kan nu logge ind.", "success");
+        updateToast(
+          toastId,
+          "Bruger oprettet! Du kan nu logge ind.",
+          "success"
+        );
         setSuccess(true);
         setIsLogin(true);
         setLoginEmail(form.email);
         setForm({ email: "", firstName: "", lastName: "" });
       } else {
-        updateToast(toastId, data.message || "Brugeroprettelse mislykkedes", "error");
+        updateToast(
+          toastId,
+          data.message || "Brugeroprettelse mislykkedes",
+          "error"
+        );
       }
     } catch (err) {
       console.error("Register error:", err);
@@ -107,7 +122,9 @@ export default function UserAuthForm() {
               type="text"
               placeholder="Fornavn"
               value={form.firstName}
-              onChange={(e) => setForm({ ...form, firstName: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, firstName: e.target.value })
+              }
               className="w-full p-2 border border-gray-300 rounded"
               required
             />
@@ -115,7 +132,9 @@ export default function UserAuthForm() {
               type="text"
               placeholder="Efternavn"
               value={form.lastName}
-              onChange={(e) => setForm({ ...form, lastName: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, lastName: e.target.value })
+              }
               className="w-full p-2 border border-gray-300 rounded"
               required
             />
