@@ -22,37 +22,45 @@ function BookDetailsPage() {
   // FETCH BOOK + LOG (AUTH)
   // -----------------------------
   useEffect(() => {
-    const fetchBook = async () => {
-      try {
-        const bookRes = await httpClient.get(`${endpoints.books}/${id}`);
-        setBook(bookRes);
-        setStatus(bookRes.status);
-      } catch (error) {
-        console.error(error);
-        toast.error('❌ Failed to fetch book details');
-      }
-    };
+  const fetchBook = async () => {
+    try {
+      const bookRes = await httpClient.get(`${endpoints.books}/${id}`);
+      setBook(bookRes);
+      setStatus(bookRes.status);
+    } catch (error) {
+      console.error(error);
+      toast.error('❌ Failed to fetch book details');
+    }
+  };
 
-    const fetchLog = async () => {
-      try {
-        const logRes = await httpClient.get(
-          `${endpoints.logs}/${id}?listType=reading`
-        );
+  const fetchLog = async () => {
+    try {
+      const logs = await httpClient.get(
+        `${endpoints.logs}/me/latest?listType=reading`
+      );
 
-        setLog(logRes);
-        setCurrentPage(logRes.currentPage?.toString() || '');
-      } catch (error) {
-        console.warn("No existing log found for this book");
+      const bookLog = logs.find(l => l.bookId === parseInt(id));
+
+      if (bookLog) {
+        setLog(bookLog);
+        setCurrentPage(bookLog.currentPage.toString());
+      } else {
         setLog(null);
         setCurrentPage('');
       }
-    };
-
-    if (id) {
-      fetchBook();
-      fetchLog();
+    } catch (error) {
+      console.warn("No existing log found");
+      setLog(null);
+      setCurrentPage('');
     }
-  }, [id]);
+  };
+
+  if (id) {
+    fetchBook();
+    fetchLog();
+  }
+}, [id]);
+
 
   // -----------------------------
   // SAVE / UPDATE PAGE PROGRESS
