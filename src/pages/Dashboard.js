@@ -74,8 +74,6 @@ export default function Dashboard() {
         `${endpoints.logs}/me/latest?listType=reading`
       );
 
-      console.log("RAW LOGS FROM API:", logs);
-
       // 🔑 Filtrér logs uden book fra
       const validLogs = (logs || []).filter((l) => l && l.book);
 
@@ -104,7 +102,6 @@ export default function Dashboard() {
     if (!readingLogs || readingLogs.length === 0) return null;
 
     const first = readingLogs[0];
-
     if (!first.book) return null;
 
     return first;
@@ -125,7 +122,6 @@ export default function Dashboard() {
     if (!log || !log.book) return;
 
     try {
-      // ➕ nyt log-entry: read
       await httpClient.post(`${endpoints.logs}`, {
         bookId: log.book.bookId,
         currentPage: log.noOfPages,
@@ -133,7 +129,6 @@ export default function Dashboard() {
         listType: "read",
       });
 
-      // 🔁 opdater bog-status
       await httpClient.put(
         `${endpoints.books}/${log.book.bookId}/status`,
         { status: "read" }
@@ -179,8 +174,10 @@ export default function Dashboard() {
   // RENDER
   // -----------------------------
   return (
-    <div className="p-6 text-ff_text_light">
-      <h1 className="text-3xl font-semibold mb-6">
+    <div className="p-4 md:p-6 text-ff_text_light max-w-6xl mx-auto">
+
+      {/* TITLE */}
+      <h1 className="text-2xl md:text-3xl font-semibold mb-6">
         Velkommen, {currentUser?.firstName || "læser"} 👋
       </h1>
 
@@ -188,7 +185,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <div
           onClick={() => goToFilteredBooks("read")}
-          className="cursor-pointer bg-yellow-400 text-black rounded-lg p-4 text-center"
+          className="cursor-pointer bg-yellow-400 text-black rounded-lg p-4 text-center min-h-[90px] flex flex-col justify-center"
         >
           <h3>Books read</h3>
           <p className="text-4xl">{booksReadCount}</p>
@@ -196,7 +193,7 @@ export default function Dashboard() {
 
         <div
           onClick={() => goToFilteredBooks("reading")}
-          className="cursor-pointer bg-gray-700 text-white rounded-lg p-4 text-center"
+          className="cursor-pointer bg-gray-700 text-white rounded-lg p-4 text-center min-h-[90px] flex flex-col justify-center"
         >
           <h3>Currently reading</h3>
           <p className="text-4xl">{currentlyReadingCount}</p>
@@ -204,7 +201,7 @@ export default function Dashboard() {
 
         <div
           onClick={() => goToFilteredBooks("unread")}
-          className="cursor-pointer bg-blue-700 text-white rounded-lg p-4 text-center"
+          className="cursor-pointer bg-blue-700 text-white rounded-lg p-4 text-center min-h-[90px] flex flex-col justify-center"
         >
           <h3>Books to read</h3>
           <p className="text-4xl">{booksToReadCount}</p>
@@ -215,7 +212,7 @@ export default function Dashboard() {
           CONTINUE READING CARD
       ----------------------------- */}
       {latestLog && (
-        <div className="bg-gray-800 rounded-lg p-5 mb-8 border border-gray-700">
+        <div className="bg-gray-800 rounded-lg p-4 md:p-5 mb-8 border border-gray-700 max-w-xl mx-auto md:max-w-none">
           <h2 className="text-xl font-semibold mb-2">Continue reading</h2>
 
           <p className="text-lg font-bold">
@@ -243,7 +240,7 @@ export default function Dashboard() {
             onClick={() =>
               navigate(`/books/${latestLog.book.bookId}`)
             }
-            className="bg-yellow-500 hover:bg-yellow-600 text-black px-4 py-2 rounded font-medium"
+            className="w-full md:w-auto bg-yellow-500 hover:bg-yellow-600 text-black px-4 py-2 rounded font-medium"
           >
             Continue
           </button>
@@ -254,22 +251,24 @@ export default function Dashboard() {
           READING GRAPH
       ----------------------------- */}
       {readingLogs.length > 0 && (
-        <ResponsiveContainer width="100%" height={250}>
-          <LineChart
-            data={readingLogs.map((l) => ({
-              date: l.createdAt
-                ? new Date(l.createdAt).toLocaleDateString("da-DK")
-                : "",
-              pages: l.currentPage,
-            }))}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" />
-            <YAxis />
-            <Tooltip />
-            <Line type="monotone" dataKey="pages" stroke="#e6d064" />
-          </LineChart>
-        </ResponsiveContainer>
+        <div className="mb-8">
+          <ResponsiveContainer width="100%" height={200} className="md:h-[300px]">
+            <LineChart
+              data={readingLogs.map((l) => ({
+                date: l.createdAt
+                  ? new Date(l.createdAt).toLocaleDateString("da-DK")
+                  : "",
+                pages: l.currentPage,
+              }))}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis />
+              <Tooltip />
+              <Line type="monotone" dataKey="pages" stroke="#e6d064" />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
       )}
 
       {/* -----------------------------
@@ -279,12 +278,14 @@ export default function Dashboard() {
         {toReadBooks.map((book) => (
           <div
             key={book.bookId}
-            className="min-w-[200px] bg-gray-700 p-4 rounded"
+            className="min-w-[160px] md:min-w-[200px] bg-gray-700 p-3 md:p-4 rounded"
           >
-            <p className="font-bold">{book.title}</p>
+            <p className="font-bold text-sm md:text-base">
+              {book.title}
+            </p>
             <button
               onClick={() => handleStartReading(book)}
-              className="mt-2 bg-blue-500 px-3 py-1 rounded"
+              className="mt-2 w-full md:w-auto bg-blue-500 px-3 py-2 rounded"
             >
               Start
             </button>
@@ -295,16 +296,18 @@ export default function Dashboard() {
       {/* -----------------------------
           CURRENTLY READING LIST
       ----------------------------- */}
-      {readingLogs
-        .filter((log) => log && log.book)
-        .map((log) => (
-          <CurrentlyReadingBook
-            key={log.logId}
-            log={log}
-            onUpdateProgress={updatePageProgress}
-            onStatusChange={() => markAsRead(log.logId)}
-          />
-        ))}
+      <div className="space-y-4">
+        {readingLogs
+          .filter((log) => log && log.book)
+          .map((log) => (
+            <CurrentlyReadingBook
+              key={log.logId}
+              log={log}
+              onUpdateProgress={updatePageProgress}
+              onStatusChange={() => markAsRead(log.logId)}
+            />
+          ))}
+      </div>
     </div>
   );
 }
