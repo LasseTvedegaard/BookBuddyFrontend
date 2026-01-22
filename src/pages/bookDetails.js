@@ -4,9 +4,8 @@ import { toast } from 'react-toastify';
 import { useUser } from '../components/common/Login/UserContext';
 import { endpoints } from '../endpoints';
 import { updateOrCreateLog } from '../utils/logHelpers';
-import HttpClient from '../services/HttpClient';
+import HttpClient from "../services/HttpClient";
 
-// Brug din HttpClient med JWT-interceptor
 const httpClient = new HttpClient(process.env.REACT_APP_API_URL);
 
 function BookDetailsPage() {
@@ -19,18 +18,8 @@ function BookDetailsPage() {
   const [currentPage, setCurrentPage] = useState('');
   const [status, setStatus] = useState('');
 
-  // 🔒 Tving login før siden bruges
+  // Fetch book and reading log (AUTH REQUIRED)
   useEffect(() => {
-    if (!currentUser) {
-      navigate('/login');
-      return;
-    }
-  }, [currentUser, navigate]);
-
-  // Fetch book and reading log (USER-SCOPED, MED JWT)
-  useEffect(() => {
-    if (!id || !currentUser) return;
-
     const fetchBook = async () => {
       try {
         const bookRes = await httpClient.get(`${endpoints.books}/${id}`);
@@ -38,39 +27,39 @@ function BookDetailsPage() {
         setStatus(bookRes.status);
       } catch (error) {
         console.error(error);
-        toast.error('❌ Failed to fetch book details');
+        toast.error('❌ Failed to fetch book details (not authorized?)');
       }
     };
 
     const fetchLog = async () => {
       try {
-        // Brug dit eksisterende sikre endpoint
+        // ⚠️ DENNE ENDPOINT FINDES IKKE:
+        // Du har: GET /api/log/{id} -> GetById(int id, string listType)
         const logRes = await httpClient.get(
-          `${endpoints.logs}/me/latest?listType=reading`
+          `${endpoints.logs}/${id}?listType=reading`
         );
 
-        // Filtrér evt. på bookId, hvis endpoint returnerer flere
-        if (logRes && logRes.bookId === Number(id)) {
-          setLog(logRes);
-          setCurrentPage(logRes.currentPage?.toString() || '');
-        } else {
-          setLog(null);
-          setCurrentPage('');
-        }
+        setLog(logRes);
+        setCurrentPage(logRes.currentPage?.toString() || '');
       } catch (error) {
-        // Ingen log endnu er helt OK
+        console.warn("No existing log found");
         setLog(null);
         setCurrentPage('');
       }
     };
 
-    fetchBook();
-    fetchLog();
-  }, [id, currentUser]);
+    if (id) {
+      fetchBook();
+      fetchLog();
+    }
+  }, [id]);
 
   // Save progress (new or updated log)
   const updatePage = async () => {
-    if (!book || !currentUser) return;
+    if (!currentUser) {
+      toast.error("You must be logged in");
+      return;
+    }
 
     const updatedLog = await updateOrCreateLog({
       book,
@@ -82,14 +71,12 @@ function BookDetailsPage() {
 
     if (updatedLog) {
       setLog(updatedLog);
-      toast.success('✅ Page progress saved');
+      toast.success("✅ Page progress saved");
     }
   };
 
-  // Update status of the book (USER-SCOPED, MED JWT)
+  // Update status of the book
   const updateStatus = async () => {
-    if (!book) return;
-
     try {
       await httpClient.put(`${endpoints.books}/${book.bookId}/status`, {
         status
@@ -117,9 +104,7 @@ function BookDetailsPage() {
       <h2 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">
         {book.title}
       </h2>
-      <p className="text-gray-700 dark:text-gray-300 mb-1">
-        Author: {book.author}
-      </p>
+      <p className="text-gray-700 dark:text-gray-300 mb-1">Author: {book.author}</p>
       <p className="text-gray-700 dark:text-gray-300 mb-4">
         Total Pages: {book.noOfPages}
       </p>
