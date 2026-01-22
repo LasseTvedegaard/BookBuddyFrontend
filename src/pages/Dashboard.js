@@ -74,7 +74,10 @@ export default function Dashboard() {
         `${endpoints.logs}/me/latest?listType=reading`
       );
 
-      setReadingLogs(logs);
+      // 🔑 FILTRÉR logs UDEN book fra (meget vigtigt)
+      const validLogs = (logs || []).filter(l => l.book);
+
+      setReadingLogs(validLogs);
     } catch (error) {
       console.error("Failed to fetch reading logs", error);
     }
@@ -99,7 +102,12 @@ export default function Dashboard() {
     if (!readingLogs || readingLogs.length === 0) return null;
 
     // antager API allerede sorterer latest først
-    return readingLogs[0];
+    const first = readingLogs[0];
+
+    // 🔒 ekstra sikkerhed
+    if (!first.book) return null;
+
+    return first;
   }, [readingLogs]);
 
   // -----------------------------
@@ -114,7 +122,7 @@ export default function Dashboard() {
   // -----------------------------
   const markAsRead = async (logId) => {
     const log = readingLogs.find((l) => l.logId === logId);
-    if (!log) return;
+    if (!log || !log.book) return;
 
     try {
       // ➕ nyt log-entry: read
@@ -285,14 +293,16 @@ export default function Dashboard() {
       {/* -----------------------------
           CURRENTLY READING LIST
       ----------------------------- */}
-      {readingLogs.map((log) => (
-        <CurrentlyReadingBook
-          key={log.logId}
-          log={log}
-          onUpdateProgress={updatePageProgress}
-          onStatusChange={() => markAsRead(log.logId)}
-        />
-      ))}
+      {readingLogs
+        .filter(log => log.book)   // 🔑 ekstra sikkerhed
+        .map((log) => (
+          <CurrentlyReadingBook
+            key={log.logId}
+            log={log}
+            onUpdateProgress={updatePageProgress}
+            onStatusChange={() => markAsRead(log.logId)}
+          />
+        ))}
     </div>
   );
 }
