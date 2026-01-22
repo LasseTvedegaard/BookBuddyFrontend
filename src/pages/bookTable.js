@@ -83,47 +83,44 @@ function BookTable() {
     }
   };
 
- const handleStatusChange = async (book, newStatus) => {
-  // Status-opdatering (den vigtige del)
-  try {
-    await httpClient.put(
-      `${endpoints.books}/${book.bookId}/status`,
-      { status: newStatus }
-    );
-
-    setBooks(prev =>
-      prev.map(b =>
-        b.bookId === book.bookId
-          ? { ...b, status: newStatus }
-          : b
-      )
-    );
-
-    toast.success("Status updated!");
-  } catch (err) {
-    toast.error("Failed to update status.");
-    console.error(err);
-    return; 
-  }
-
-  // Reading-log (sekundær, må gerne fejle)
-  if (newStatus === "reading" && currentUser) {
+  const handleStatusChange = async (book, newStatus) => {
     try {
-      await startReading(book, currentUser);
+      await httpClient.put(
+        `${endpoints.books}/${book.bookId}/status`,
+        { status: newStatus }
+      );
+
+      setBooks(prev =>
+        prev.map(b =>
+          b.bookId === book.bookId
+            ? { ...b, status: newStatus }
+            : b
+        )
+      );
+
+      toast.success("Status updated!");
     } catch (err) {
-      console.warn("Reading log failed", err);
-      // ingen toast – status ER allerede opdateret
+      toast.error("Failed to update status.");
+      console.error(err);
+      return; 
     }
-  }
-};
 
-
+    if (newStatus === "reading" && currentUser) {
+      try {
+        await startReading(book, currentUser);
+      } catch (err) {
+        console.warn("Reading log failed", err);
+      }
+    }
+  };
 
   return (
     <div className="container mx-auto p-4 bg-ff_background_light dark:bg-ff_background_dark min-h-screen">
-      <div className="pb-6 flex flex-col md:flex-row justify-between items-start md:items-center">
+
+      {/* HEADER */}
+      <div className="pb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <span className="text-3xl font-semibold text-gray-900 dark:text-white">
+          <span className="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white">
             Books Overview
           </span>
           <p className="mt-1 text-sm font-normal text-gray-500 dark:text-gray-400">
@@ -135,7 +132,8 @@ function BookTable() {
             </p>
           )}
         </div>
-        <div className="mt-4 md:mt-0 flex flex-row">
+
+        <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
           <SearchComponent
             placeholder="Search title or author"
             value={searchTerm}
@@ -143,81 +141,141 @@ function BookTable() {
           />
           <button
             onClick={handleAddBookClick}
-            className="ml-2 px-4 py-2 rounded-md bg-customYellow text-ff_background_dark font-semibold hover:bg-customYellowDark"
+            className="px-4 py-2 rounded-md bg-customYellow text-ff_background_dark font-semibold hover:bg-customYellowDark w-full sm:w-auto"
           >
             Add new book
           </button>
         </div>
       </div>
 
-      <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-        <thead className="text-s text-gray-700 uppercase bg-gray-50 dark:bg-ff_bg_sidebar_dark dark:text-gray-400">
-          <tr>
-            <th className="px-6 py-4 w-[200px]">Title</th>
-            <th className="px-6 py-4 w-[200px]">Author</th>
-            <th className="px-6 py-4 w-[120px]">Genre</th>
-            <th className="px-6 py-4 w-[80px]">Pages</th>
-            <th className="px-6 py-4 w-[150px]">Book Type</th>
-            <th className="px-6 py-4 w-[150px]">ISBN</th>
-            <th className="px-6 py-4 w-[150px]">Location</th>
-            <th className="px-6 py-4 w-[150px]">Status</th>
-            <th className="px-6 py-4 w-[100px]">Image</th>
-            <th className="px-6 py-4">Details</th>
-          </tr>
-        </thead>
-        <tbody>
-          {currentBooks.length > 0 ? (
-            currentBooks.map((book, index) => (
-              <tr
-                key={book.bookId}
-                className={`${
-                  index % 2 === 0 ? "ff-table-row-even" : "ff-table-row-odd"
-                } hover:bg-gray-100 dark:hover:bg-gray-700`}
-              >
-                <td className="py-4 px-6">{book.title}</td>
-                <td className="py-4 px-6">{book.author}</td>
-                <td className="py-4 px-6">{book.genre?.genreName}</td>
-                <td className="py-4 px-6">{book.noOfPages}</td>
-                <td className="py-4 px-6">{book.bookType}</td>
-                <td className="py-4 px-6">{book.isbnNo}</td>
-                <td className="py-4 px-6">{book.location?.locationName}</td>
-                <td className="py-4 px-6">
-                  <select
-                    value={book.status}
-                    onChange={(e) => handleStatusChange(book, e.target.value)}
-                    className="bg-gray-800 text-white px-2 py-1 rounded"
-                  >
-                    <option value="unread">Unread</option>
-                    <option value="reading">Reading</option>
-                    <option value="read">Read</option>
-                  </select>
-                </td>
-                <td className="py-4 px-6">
-                  <img
-                    src={book.imageURL || ""}
-                    alt={book.title}
-                    className="h-10 w-10 cursor-pointer"
-                    onClick={() => openModal(book.imageURL)}
-                  />
-                </td>
-                <td className="py-4 px-6 text-center">
-                  <button onClick={() => handleDetailsClick(book.bookId)}>
-                    <FiMoreHorizontal className="h-5 w-5 text-black dark:text-white" />
-                  </button>
+      {/* -----------------------------
+          MOBILE VIEW (CARDS)
+      ----------------------------- */}
+      <div className="block md:hidden space-y-4">
+        {currentBooks.length > 0 ? (
+          currentBooks.map((book) => (
+            <div
+              key={book.bookId}
+              className="bg-gray-800 rounded-lg p-4 border border-gray-700"
+            >
+              <div className="flex gap-4">
+                <img
+                  src={book.imageURL || ""}
+                  alt={book.title}
+                  className="h-20 w-14 object-cover rounded cursor-pointer"
+                  onClick={() => openModal(book.imageURL)}
+                />
+
+                <div className="flex-1">
+                  <p className="font-bold text-white">{book.title}</p>
+                  <p className="text-sm text-gray-400">{book.author}</p>
+                  <p className="text-sm text-gray-400">
+                    {book.noOfPages} pages
+                  </p>
+
+                  <div className="mt-2 flex items-center gap-2">
+                    <select
+                      value={book.status}
+                      onChange={(e) => handleStatusChange(book, e.target.value)}
+                      className="bg-gray-700 text-white px-2 py-1 rounded text-sm"
+                    >
+                      <option value="unread">Unread</option>
+                      <option value="reading">Reading</option>
+                      <option value="read">Read</option>
+                    </select>
+
+                    <button
+                      onClick={() => handleDetailsClick(book.bookId)}
+                      className="ml-auto text-gray-300"
+                    >
+                      <FiMoreHorizontal className="h-5 w-5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <p className="text-center text-gray-400">
+            No books found.
+          </p>
+        )}
+      </div>
+
+      {/* -----------------------------
+          DESKTOP VIEW (TABLE)
+      ----------------------------- */}
+      <div className="hidden md:block">
+        <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+          <thead className="text-s text-gray-700 uppercase bg-gray-50 dark:bg-ff_bg_sidebar_dark dark:text-gray-400">
+            <tr>
+              <th className="px-6 py-4 w-[200px]">Title</th>
+              <th className="px-6 py-4 w-[200px]">Author</th>
+              <th className="px-6 py-4 w-[120px]">Genre</th>
+              <th className="px-6 py-4 w-[80px]">Pages</th>
+              <th className="px-6 py-4 w-[150px]">Book Type</th>
+              <th className="px-6 py-4 w-[150px]">ISBN</th>
+              <th className="px-6 py-4 w-[150px]">Location</th>
+              <th className="px-6 py-4 w-[150px]">Status</th>
+              <th className="px-6 py-4 w-[100px]">Image</th>
+              <th className="px-6 py-4">Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            {currentBooks.length > 0 ? (
+              currentBooks.map((book, index) => (
+                <tr
+                  key={book.bookId}
+                  className={`${
+                    index % 2 === 0 ? "ff-table-row-even" : "ff-table-row-odd"
+                  } hover:bg-gray-100 dark:hover:bg-gray-700`}
+                >
+                  <td className="py-4 px-6">{book.title}</td>
+                  <td className="py-4 px-6">{book.author}</td>
+                  <td className="py-4 px-6">{book.genre?.genreName}</td>
+                  <td className="py-4 px-6">{book.noOfPages}</td>
+                  <td className="py-4 px-6">{book.bookType}</td>
+                  <td className="py-4 px-6">{book.isbnNo}</td>
+                  <td className="py-4 px-6">{book.location?.locationName}</td>
+                  <td className="py-4 px-6">
+                    <select
+                      value={book.status}
+                      onChange={(e) => handleStatusChange(book, e.target.value)}
+                      className="bg-gray-800 text-white px-2 py-1 rounded"
+                    >
+                      <option value="unread">Unread</option>
+                      <option value="reading">Reading</option>
+                      <option value="read">Read</option>
+                    </select>
+                  </td>
+                  <td className="py-4 px-6">
+                    <img
+                      src={book.imageURL || ""}
+                      alt={book.title}
+                      className="h-10 w-10 cursor-pointer object-cover"
+                      onClick={() => openModal(book.imageURL)}
+                    />
+                  </td>
+                  <td className="py-4 px-6 text-center">
+                    <button onClick={() => handleDetailsClick(book.bookId)}>
+                      <FiMoreHorizontal className="h-5 w-5 text-black dark:text-white" />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="10" className="py-4 px-6 text-center text-gray-500 dark:text-gray-400">
+                  No books found.
                 </td>
               </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="10" className="py-4 px-6 text-center text-gray-500 dark:text-gray-400">
-                No books found.
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+            )}
+          </tbody>
+        </table>
+      </div>
 
-      <div className="flex justify-center mt-4">
+      {/* PAGINATION */}
+      <div className="flex justify-center mt-6">
         <Pagination
           currentPage={currentPage}
           totalPages={Math.ceil(books.length / booksPerPage)}
@@ -225,6 +283,7 @@ function BookTable() {
         />
       </div>
 
+      {/* IMAGE MODAL */}
       <Modal isOpen={isModalOpen} onClose={closeModal}>
         <img src={selectedBookImage} alt="Book" className="max-w-full max-h-full" />
       </Modal>
