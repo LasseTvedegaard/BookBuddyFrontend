@@ -40,7 +40,7 @@ export default function Dashboard() {
       const [read, reading, unread] = await Promise.all([
         httpClient.get(`${endpoints.books}?status=read`),
         httpClient.get(`${endpoints.books}?status=reading`),
-        httpClient.get(`${endpoints.books}?status=unread`)
+        httpClient.get(`${endpoints.books}?status=unread`),
       ]);
 
       setBooksReadCount(read.length);
@@ -74,8 +74,10 @@ export default function Dashboard() {
         `${endpoints.logs}/me/latest?listType=reading`
       );
 
-      // 🔑 FILTRÉR logs UDEN book fra (meget vigtigt)
-      const validLogs = (logs || []).filter(l => l.book);
+      console.log("RAW LOGS FROM API:", logs);
+
+      // 🔑 Filtrér logs uden book fra
+      const validLogs = (logs || []).filter((l) => l && l.book);
 
       setReadingLogs(validLogs);
     } catch (error) {
@@ -101,10 +103,8 @@ export default function Dashboard() {
   const latestLog = useMemo(() => {
     if (!readingLogs || readingLogs.length === 0) return null;
 
-    // antager API allerede sorterer latest først
     const first = readingLogs[0];
 
-    // 🔒 ekstra sikkerhed
     if (!first.book) return null;
 
     return first;
@@ -167,7 +167,7 @@ export default function Dashboard() {
       await Promise.all([
         fetchLogs(),
         fetchCounts(),
-        fetchToReadBooks()
+        fetchToReadBooks(),
       ]);
     } catch (error) {
       console.error("Error starting reading:", error);
@@ -257,7 +257,9 @@ export default function Dashboard() {
         <ResponsiveContainer width="100%" height={250}>
           <LineChart
             data={readingLogs.map((l) => ({
-              date: new Date(l.createdAt).toLocaleDateString("da-DK"),
+              date: l.createdAt
+                ? new Date(l.createdAt).toLocaleDateString("da-DK")
+                : "",
               pages: l.currentPage,
             }))}
           >
@@ -294,7 +296,7 @@ export default function Dashboard() {
           CURRENTLY READING LIST
       ----------------------------- */}
       {readingLogs
-        .filter(log => log.book)   // 🔑 ekstra sikkerhed
+        .filter((log) => log && log.book)
         .map((log) => (
           <CurrentlyReadingBook
             key={log.logId}
