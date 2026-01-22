@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useUser } from '../components/common/Login/UserContext';
 import { endpoints } from '../endpoints';
 import { updateOrCreateLog } from '../utils/logHelpers';
+import HttpClient from '../services/HttpClient';
+
+// Brug din HttpClient med JWT-interceptor
+const httpClient = new HttpClient(process.env.REACT_APP_API_URL);
 
 function BookDetailsPage() {
   const { id } = useParams(); // bookId
@@ -16,37 +19,59 @@ function BookDetailsPage() {
   const [currentPage, setCurrentPage] = useState('');
   const [status, setStatus] = useState('');
 
-  // Fetch book and reading log
+  // 🔒 Tving login før siden bruges
   useEffect(() => {
+    if (!currentUser) {
+      navigate('/login');
+      return;
+    }
+  }, [currentUser, navigate]);
+
+  // Fetch book and reading log (USER-SCOPED, MED JWT)
+  useEffect(() => {
+    if (!id || !currentUser) return;
+
     const fetchBook = async () => {
       try {
-        const bookRes = await axios.get(`${endpoints.books}/${id}`);
-        setBook(bookRes.data);
-        setStatus(bookRes.data.status);
+        const bookRes = await httpClient.get(`${endpoints.books}/${id}`);
+        setBook(bookRes);
+        setStatus(bookRes.status);
       } catch (error) {
+        console.error(error);
         toast.error('❌ Failed to fetch book details');
       }
     };
 
     const fetchLog = async () => {
       try {
-        const logRes = await axios.get(`${endpoints.logs}/${id}?listType=reading`);
-        setLog(logRes.data);
-        setCurrentPage(logRes.data.currentPage?.toString() || '');
+        // Brug dit eksisterende sikre endpoint
+        const logRes = await httpClient.get(
+          `${endpoints.logs}/me/latest?listType=reading`
+        );
+
+        // Filtrér evt. på bookId, hvis endpoint returnerer flere
+        if (logRes && logRes.bookId === Number(id)) {
+          setLog(logRes);
+          setCurrentPage(logRes.currentPage?.toString() || '');
+        } else {
+          setLog(null);
+          setCurrentPage('');
+        }
       } catch (error) {
+        // Ingen log endnu er helt OK
         setLog(null);
         setCurrentPage('');
       }
     };
 
-    if (id) {
-      fetchBook();
-      fetchLog();
-    }
-  }, [id]);
+    fetchBook();
+    fetchLog();
+  }, [id, currentUser]);
 
   // Save progress (new or updated log)
   const updatePage = async () => {
+    if (!book || !currentUser) return;
+
     const updatedLog = await updateOrCreateLog({
       book,
       currentUser,
@@ -55,19 +80,25 @@ function BookDetailsPage() {
       listType: 'reading'
     });
 
-    if (updatedLog) setLog(updatedLog);
+    if (updatedLog) {
+      setLog(updatedLog);
+      toast.success('✅ Page progress saved');
+    }
   };
 
-  // Update status of the book (e.g. to 'read')
+  // Update status of the book (USER-SCOPED, MED JWT)
   const updateStatus = async () => {
+    if (!book) return;
+
     try {
-      await axios.put(`${endpoints.books}/${book.bookId}`, {
-        ...book,
+      await httpClient.put(`${endpoints.books}/${book.bookId}/status`, {
         status
       });
+
       toast.success('✅ Status updated!');
       navigate(`/books?status=${status}`);
     } catch (error) {
+      console.error(error);
       toast.error('❌ Failed to update status');
     }
   };
@@ -86,8 +117,12 @@ function BookDetailsPage() {
       <h2 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">
         {book.title}
       </h2>
-      <p className="text-gray-700 dark:text-gray-300 mb-1">Author: {book.author}</p>
-      <p className="text-gray-700 dark:text-gray-300 mb-4">Total Pages: {book.noOfPages}</p>
+      <p className="text-gray-700 dark:text-gray-300 mb-1">
+        Author: {book.author}
+      </p>
+      <p className="text-gray-700 dark:text-gray-300 mb-4">
+        Total Pages: {book.noOfPages}
+      </p>
 
       <div className="mb-6">
         <label className="block text-sm font-medium mb-1 text-gray-800 dark:text-gray-200">
