@@ -93,6 +93,16 @@ export default function Dashboard() {
   }, [currentUser, fetchLogs]);
 
   // -----------------------------
+  // CONTINUE READING (LATEST LOG)
+  // -----------------------------
+  const latestLog = useMemo(() => {
+    if (!readingLogs || readingLogs.length === 0) return null;
+
+    // antager API allerede sorterer latest først
+    return readingLogs[0];
+  }, [readingLogs]);
+
+  // -----------------------------
   // NAVIGATION
   // -----------------------------
   const goToFilteredBooks = (status) => {
@@ -107,7 +117,7 @@ export default function Dashboard() {
     if (!log) return;
 
     try {
-      // ➕ nyt log-entry: read (JWT /me)
+      // ➕ nyt log-entry: read
       await httpClient.post(`${endpoints.logs}`, {
         bookId: log.book.bookId,
         currentPage: log.noOfPages,
@@ -116,10 +126,9 @@ export default function Dashboard() {
       });
 
       // 🔁 opdater bog-status
-      await httpClient.patch(
-        `${endpoints.books}/status/${log.book.bookId}`,
-        `"read"`,
-        { headers: { "Content-Type": "application/json" } }
+      await httpClient.put(
+        `${endpoints.books}/${log.book.bookId}/status`,
+        { status: "read" }
       );
 
       await Promise.all([fetchLogs(), fetchCounts()]);
@@ -146,7 +155,7 @@ export default function Dashboard() {
   // -----------------------------
   const handleStartReading = async (book) => {
     try {
-      await startReading(book); // bruger JWT /me
+      await startReading(book);
       await Promise.all([
         fetchLogs(),
         fetchCounts(),
@@ -194,17 +203,58 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* READING GRAPH */}
+      {/* -----------------------------
+          CONTINUE READING CARD
+      ----------------------------- */}
+      {latestLog && (
+        <div className="bg-gray-800 rounded-lg p-5 mb-8 border border-gray-700">
+          <h2 className="text-xl font-semibold mb-2">Continue reading</h2>
+
+          <p className="text-lg font-bold">
+            {latestLog.book.title}
+          </p>
+
+          <p className="text-sm text-gray-400 mb-2">
+            Page {latestLog.currentPage} / {latestLog.noOfPages}
+          </p>
+
+          {/* Progress bar */}
+          <div className="w-full bg-gray-700 rounded h-3 mb-3">
+            <div
+              className="bg-yellow-400 h-3 rounded"
+              style={{
+                width: `${Math.min(
+                  (latestLog.currentPage / latestLog.noOfPages) * 100,
+                  100
+                )}%`,
+              }}
+            />
+          </div>
+
+          <button
+            onClick={() =>
+              navigate(`/books/${latestLog.book.bookId}`)
+            }
+            className="bg-yellow-500 hover:bg-yellow-600 text-black px-4 py-2 rounded font-medium"
+          >
+            Continue
+          </button>
+        </div>
+      )}
+
+      {/* -----------------------------
+          READING GRAPH
+      ----------------------------- */}
       {readingLogs.length > 0 && (
         <ResponsiveContainer width="100%" height={250}>
           <LineChart
-            data={readingLogs.map((l, i) => ({
-              index: i + 1,
+            data={readingLogs.map((l) => ({
+              date: new Date(l.createdAt).toLocaleDateString("da-DK"),
               pages: l.currentPage,
             }))}
           >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="index" />
+            <XAxis dataKey="date" />
             <YAxis />
             <Tooltip />
             <Line type="monotone" dataKey="pages" stroke="#e6d064" />
@@ -212,10 +262,15 @@ export default function Dashboard() {
         </ResponsiveContainer>
       )}
 
-      {/* BOOKS TO START */}
+      {/* -----------------------------
+          BOOKS TO START
+      ----------------------------- */}
       <div className="flex gap-4 overflow-x-auto my-6">
         {toReadBooks.map((book) => (
-          <div key={book.bookId} className="min-w-[200px] bg-gray-700 p-4 rounded">
+          <div
+            key={book.bookId}
+            className="min-w-[200px] bg-gray-700 p-4 rounded"
+          >
             <p className="font-bold">{book.title}</p>
             <button
               onClick={() => handleStartReading(book)}
@@ -227,7 +282,9 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* CURRENTLY READING */}
+      {/* -----------------------------
+          CURRENTLY READING LIST
+      ----------------------------- */}
       {readingLogs.map((log) => (
         <CurrentlyReadingBook
           key={log.logId}
