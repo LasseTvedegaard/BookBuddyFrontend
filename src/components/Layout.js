@@ -10,14 +10,43 @@ const Layout = () => {
 
   return (
     <Background>
-      <div className="flex h-screen">
+      <div className="flex min-h-screen">
+
+        {/* Sidebar */}
         <MenuDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
-        <CollapseButton open={drawerOpen} setOpen={setDrawerOpen} className="absolute top-5 left-5 z-30" />
-        <div className={`flex-grow transition-all duration-300 ${drawerOpen ? 'ml-64' : 'ml-0'}`}>
-          <div className="m-5">
-            <div className="flex justify-end mb-4">
+
+        {/* Main content area */}
+        <div
+          className={`
+            flex-grow transition-all duration-300
+            ${drawerOpen ? 'ml-64' : 'ml-0'}
+          `}
+        >
+          {/* Top bar */}
+          <div className="relative">
+            <CollapseButton
+              open={drawerOpen}
+              setOpen={setDrawerOpen}
+              className="absolute top-4 left-4 z-30"
+            />
+
+            <div className="flex justify-end px-4 py-4">
               <ThemeToggle />
             </div>
+          </div>
+
+          {/* Page content wrapper */}
+          <div
+            className="
+              w-full
+              px-4
+              sm:px-6
+              md:px-8
+              lg:px-10
+              xl:px-12
+              pb-8
+            "
+          >
             <Outlet />
           </div>
         </div>
