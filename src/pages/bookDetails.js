@@ -22,45 +22,44 @@ function BookDetailsPage() {
   // FETCH BOOK + LOG (AUTH)
   // -----------------------------
   useEffect(() => {
-  const fetchBook = async () => {
-    try {
-      const bookRes = await httpClient.get(`${endpoints.books}/${id}`);
-      setBook(bookRes);
-      setStatus(bookRes.status);
-    } catch (error) {
-      console.error(error);
-      toast.error('❌ Failed to fetch book details');
-    }
-  };
+    const fetchBook = async () => {
+      try {
+        const bookRes = await httpClient.get(`${endpoints.books}/${id}`);
+        setBook(bookRes);
+        setStatus(bookRes.status);
+      } catch (error) {
+        console.error(error);
+        toast.error('❌ Failed to fetch book details');
+      }
+    };
 
-  const fetchLog = async () => {
-    try {
-      const logs = await httpClient.get(
-        `${endpoints.logs}/me/latest?listType=reading`
-      );
+    const fetchLog = async () => {
+      try {
+        const logs = await httpClient.get(
+          `${endpoints.logs}/me/latest?listType=reading`
+        );
 
-      const bookLog = logs.find(l => l.bookId === parseInt(id));
+        const bookLog = logs.find(l => l.bookId === parseInt(id));
 
-      if (bookLog) {
-        setLog(bookLog);
-        setCurrentPage(bookLog.currentPage.toString());
-      } else {
+        if (bookLog) {
+          setLog(bookLog);
+          setCurrentPage(bookLog.currentPage.toString());
+        } else {
+          setLog(null);
+          setCurrentPage('');
+        }
+      } catch (error) {
+        console.warn("No existing log found");
         setLog(null);
         setCurrentPage('');
       }
-    } catch (error) {
-      console.warn("No existing log found");
-      setLog(null);
-      setCurrentPage('');
+    };
+
+    if (id) {
+      fetchBook();
+      fetchLog();
     }
-  };
-
-  if (id) {
-    fetchBook();
-    fetchLog();
-  }
-}, [id]);
-
+  }, [id]);
 
   // -----------------------------
   // SAVE / UPDATE PAGE PROGRESS
@@ -113,6 +112,19 @@ function BookDetailsPage() {
   if (!book) return <p className="p-4">Loading book details...</p>;
 
   // -----------------------------
+  // DERIVED STATE (UX)
+  // -----------------------------
+  const parsedCurrentPage = parseInt(currentPage || "0");
+
+  const isUnchanged =
+    log && parsedCurrentPage === log.currentPage;
+
+  const progressPercent =
+    log && book
+      ? Math.round((log.currentPage / book.noOfPages) * 100)
+      : null;
+
+  // -----------------------------
   // RENDER
   // -----------------------------
   return (
@@ -144,10 +156,14 @@ function BookDetailsPage() {
           Current Page:
         </label>
 
-        {/* 🔎 VIS SIDST GEMTE SIDE TYDELIGT */}
+        {/* 🔎 VIS SIDST GEMTE SIDE + PROCENT */}
         {log && (
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-            Last saved page: <strong>{log.currentPage}</strong>
+            Last saved page:{" "}
+            <strong>{log.currentPage}</strong>
+            {progressPercent !== null && (
+              <> ({progressPercent}%)</>
+            )}
           </p>
         )}
 
@@ -164,14 +180,14 @@ function BookDetailsPage() {
 
         <button
           onClick={updatePage}
-          disabled={!currentPage}
+          disabled={!currentPage || isUnchanged}
           className={`px-4 py-2 rounded text-white ${
-            currentPage
-              ? "bg-yellow-500 hover:bg-yellow-600"
-              : "bg-gray-400 cursor-not-allowed"
+            !currentPage || isUnchanged
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-yellow-500 hover:bg-yellow-600"
           }`}
         >
-          Save Page Progress
+          {isUnchanged ? "Already saved" : "Save Page Progress"}
         </button>
       </div>
 
