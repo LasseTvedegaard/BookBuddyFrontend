@@ -174,7 +174,7 @@ export default function Dashboard() {
   // RENDER
   // -----------------------------
   return (
-    <div className="p-4 md:p-6 text-ff_text_light max-w-6xl mx-auto">
+    <div className="px-4 md:px-8 lg:px-12 py-4 md:py-6 max-w-6xl mx-auto text-ff_text_light">
 
       {/* TITLE */}
       <h1 className="text-2xl md:text-3xl font-semibold mb-6">
