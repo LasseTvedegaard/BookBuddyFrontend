@@ -189,7 +189,7 @@ export default function Dashboard() {
   // RENDER
   // -----------------------------
   return (
-    <div className="px-3 md:px-8 lg:px-12 py-3 md:py-6 max-w-6xl mx-auto text-ff_text_light">
+    <div className="px-3 md:px-8 lg:px-12 py-3 md:py-6 max-w-6xl mx-auto text-ff_text_light overflow-x-hidden">
 
       {/* TITLE */}
       <h1 className="text-xl md:text-3xl font-semibold mb-4 md:mb-6">
@@ -197,12 +197,13 @@ export default function Dashboard() {
       </h1>
 
       {/* -----------------------------
-          STAT CARDS (RESPONSIVE GRID)
+          STAT CARDS
       ----------------------------- */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-6">
         <div
           onClick={() => goToFilteredBooks("read")}
           className="cursor-pointer 
+                     w-full
                      bg-yellow-400 text-black rounded-lg 
                      p-3 md:p-4 
                      min-h-[60px] md:min-h-[90px]
@@ -215,6 +216,7 @@ export default function Dashboard() {
         <div
           onClick={() => goToFilteredBooks("reading")}
           className="cursor-pointer 
+                     w-full
                      bg-gray-700 text-white rounded-lg 
                      p-3 md:p-4 
                      min-h-[60px] md:min-h-[90px]
@@ -227,6 +229,7 @@ export default function Dashboard() {
         <div
           onClick={() => goToFilteredBooks("unread")}
           className="cursor-pointer 
+                     w-full
                      bg-blue-700 text-white rounded-lg 
                      p-3 md:p-4 
                      min-h-[60px] md:min-h-[90px]
@@ -245,7 +248,8 @@ export default function Dashboard() {
         <div className="bg-gray-800 rounded-lg 
                         p-3 md:p-5 
                         mb-6 
-                        border border-gray-700">
+                        border border-gray-700 
+                        w-full">
           <h2 className="text-lg md:text-xl font-semibold mb-1">
             Continue reading
           </h2>
@@ -285,10 +289,10 @@ export default function Dashboard() {
       )}
 
       {/* -----------------------------
-          READING GRAPH (WITH MOBILE HEIGHT)
+          READING GRAPH
       ----------------------------- */}
       {readingLogs.length > 0 && (
-        <div className="mb-6 md:mb-8">
+        <div className="mb-6 md:mb-8 w-full">
           <ResponsiveContainer width="100%" height={200} className="md:h-[300px]">
             <LineChart
               data={readingLogs.map((l) => ({
@@ -311,11 +315,11 @@ export default function Dashboard() {
       {/* -----------------------------
           BOOKS TO START
       ----------------------------- */}
-      <div className="flex gap-3 overflow-x-auto my-4 pb-2">
+      <div className="flex gap-3 overflow-x-auto my-4 pb-2 w-full">
         {toReadBooks.map((book) => (
           <div
             key={book.bookId}
-            className="min-w-[140px] md:min-w-[200px] bg-gray-700 p-3 md:p-4 rounded"
+            className="w-full md:min-w-[200px] bg-gray-700 p-3 md:p-4 rounded flex-shrink-0"
           >
             <p className="font-bold text-sm md:text-base">
               {book.title}
@@ -333,7 +337,7 @@ export default function Dashboard() {
       {/* -----------------------------
           CURRENTLY READING LIST
       ----------------------------- */}
-      <div className="space-y-3 md:space-y-4">
+      <div className="space-y-3 md:space-y-4 w-full">
         {readingLogs
           .filter((log) => log && log.book)
           .map((log) => (
