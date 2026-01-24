@@ -64,7 +64,7 @@ export default function Dashboard() {
   }, [httpClient]);
 
   // -----------------------------
-  // FETCH READING LOGS (JWT /me)
+  // FETCH READING LOGS
   // -----------------------------
   const fetchLogs = useCallback(async () => {
     if (!currentUser) return;
@@ -74,9 +74,7 @@ export default function Dashboard() {
         `${endpoints.logs}/me/latest?listType=reading`
       );
 
-      // 🔑 Filtrér logs uden book fra
       const validLogs = (logs || []).filter((l) => l && l.book);
-
       setReadingLogs(validLogs);
     } catch (error) {
       console.error("Failed to fetch reading logs", error);
@@ -100,10 +98,8 @@ export default function Dashboard() {
   // -----------------------------
   const latestLog = useMemo(() => {
     if (!readingLogs || readingLogs.length === 0) return null;
-
     const first = readingLogs[0];
     if (!first.book) return null;
-
     return first;
   }, [readingLogs]);
 
@@ -143,52 +139,51 @@ export default function Dashboard() {
   };
 
   // -----------------------------
-  // UPDATE PAGE PROGRESS (UI only)
+  // UPDATE PAGE PROGRESS
   // -----------------------------
-  const updatePageProgress = async (logId, newPage, bookId, noOfPages, listType) => {
-  try {
-    await httpClient.put(
-      `${endpoints.logs}/${logId}`,
-      {
-        userId: currentUser.userId,   
+  const updatePageProgress = async (
+    logId,
+    newPage,
+    bookId,
+    noOfPages,
+    listType
+  ) => {
+    try {
+      await httpClient.put(`${endpoints.logs}/${logId}`, {
+        userId: currentUser.userId,
         bookId: bookId,
         currentPage: newPage,
         noOfPages: noOfPages,
         listType: listType,
-      }
-    );
+      });
 
-    setReadingLogs((prev) =>
-      prev.map((log) =>
-        log.logId === logId ? { ...log, currentPage: newPage } : log
-      )
-    );
+      setReadingLogs((prev) =>
+        prev.map((log) =>
+          log.logId === logId ? { ...log, currentPage: newPage } : log
+        )
+      );
+    } catch (err) {
+      console.error("Failed to update page progress", err);
+      toast.error("Kunne ikke gemme side");
+    }
+  };
 
-  } catch (err) {
-    console.error("Failed to update page progress", err);
-    toast.error("Kunne ikke gemme side");
-  }
-};
-
-
-
-
-    // -----------------------------
-    // START READING
-    // -----------------------------
-    const handleStartReading = async (book) => {
-      try {
-        await startReading(book);
-        await Promise.all([
-          fetchLogs(),
-          fetchCounts(),
-          fetchToReadBooks(),
-        ]);
-      } catch (error) {
-        console.error("Error starting reading:", error);
-        toast.error("Kunne ikke starte læsning.");
-      }
-    };
+  // -----------------------------
+  // START READING
+  // -----------------------------
+  const handleStartReading = async (book) => {
+    try {
+      await startReading(book);
+      await Promise.all([
+        fetchLogs(),
+        fetchCounts(),
+        fetchToReadBooks(),
+      ]);
+    } catch (error) {
+      console.error("Error starting reading:", error);
+      toast.error("Kunne ikke starte læsning.");
+    }
+  };
 
   // -----------------------------
   // RENDER
@@ -197,45 +192,66 @@ export default function Dashboard() {
     <div className="px-4 md:px-8 lg:px-12 py-4 md:py-6 max-w-6xl mx-auto text-ff_text_light">
 
       {/* TITLE */}
-      <h1 className="text-2xl md:text-3xl font-semibold mb-6">
+      <h1 className="text-2xl md:text-3xl font-semibold mb-4 md:mb-6">
         Velkommen, {currentUser?.firstName || "læser"} 👋
       </h1>
 
-      {/* STAT CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      {/* -----------------------------
+          STAT CARDS (MOBILE FIX)
+      ----------------------------- */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-6">
         <div
           onClick={() => goToFilteredBooks("read")}
-          className="cursor-pointer bg-yellow-400 text-black rounded-lg p-4 text-center min-h-[90px] flex flex-col justify-center"
+          className="cursor-pointer 
+                     bg-yellow-400 text-black rounded-lg 
+                     p-3 md:p-4 
+                     min-h-[60px] md:min-h-[90px]
+                     text-center flex flex-col justify-center"
         >
-          <h3>Books read</h3>
-          <p className="text-4xl">{booksReadCount}</p>
+          <h3 className="text-sm md:text-base">Books read</h3>
+          <p className="text-2xl md:text-4xl">{booksReadCount}</p>
         </div>
 
         <div
           onClick={() => goToFilteredBooks("reading")}
-          className="cursor-pointer bg-gray-700 text-white rounded-lg p-4 text-center min-h-[90px] flex flex-col justify-center"
+          className="cursor-pointer 
+                     bg-gray-700 text-white rounded-lg 
+                     p-3 md:p-4 
+                     min-h-[60px] md:min-h-[90px]
+                     text-center flex flex-col justify-center"
         >
-          <h3>Currently reading</h3>
-          <p className="text-4xl">{currentlyReadingCount}</p>
+          <h3 className="text-sm md:text-base">Currently reading</h3>
+          <p className="text-2xl md:text-4xl">{currentlyReadingCount}</p>
         </div>
 
         <div
           onClick={() => goToFilteredBooks("unread")}
-          className="cursor-pointer bg-blue-700 text-white rounded-lg p-4 text-center min-h-[90px] flex flex-col justify-center"
+          className="cursor-pointer 
+                     bg-blue-700 text-white rounded-lg 
+                     p-3 md:p-4 
+                     min-h-[60px] md:min-h-[90px]
+                     text-center flex flex-col justify-center
+                     col-span-2 md:col-span-1"
         >
-          <h3>Books to read</h3>
-          <p className="text-4xl">{booksToReadCount}</p>
+          <h3 className="text-sm md:text-base">Books to read</h3>
+          <p className="text-2xl md:text-4xl">{booksToReadCount}</p>
         </div>
       </div>
 
       {/* -----------------------------
-          CONTINUE READING CARD
+          CONTINUE READING (MOBILE FIX)
       ----------------------------- */}
       {latestLog && (
-        <div className="bg-gray-800 rounded-lg p-4 md:p-5 mb-8 border border-gray-700 max-w-xl mx-auto md:max-w-none">
-          <h2 className="text-xl font-semibold mb-2">Continue reading</h2>
+        <div className="bg-gray-800 rounded-lg 
+                        p-3 md:p-5 
+                        mb-6 
+                        border border-gray-700 
+                        max-w-full">
+          <h2 className="text-lg md:text-xl font-semibold mb-1">
+            Continue reading
+          </h2>
 
-          <p className="text-lg font-bold">
+          <p className="text-base md:text-lg font-bold">
             {latestLog.book.title}
           </p>
 
@@ -244,9 +260,9 @@ export default function Dashboard() {
           </p>
 
           {/* Progress bar */}
-          <div className="w-full bg-gray-700 rounded h-3 mb-3">
+          <div className="w-full bg-gray-700 rounded h-2 md:h-3 mb-3">
             <div
-              className="bg-yellow-400 h-3 rounded"
+              className="bg-yellow-400 h-2 md:h-3 rounded"
               style={{
                 width: `${Math.min(
                   (latestLog.currentPage / latestLog.noOfPages) * 100,
@@ -260,7 +276,9 @@ export default function Dashboard() {
             onClick={() =>
               navigate(`/books/${latestLog.book.bookId}`)
             }
-            className="w-full md:w-auto bg-yellow-500 hover:bg-yellow-600 text-black px-4 py-2 rounded font-medium"
+            className="w-full md:w-auto 
+                       bg-yellow-500 hover:bg-yellow-600 
+                       text-black px-4 py-2 rounded font-medium"
           >
             Continue
           </button>
@@ -268,11 +286,11 @@ export default function Dashboard() {
       )}
 
       {/* -----------------------------
-          READING GRAPH
+          READING GRAPH (SMALLER ON MOBILE)
       ----------------------------- */}
       {readingLogs.length > 0 && (
-        <div className="mb-8">
-          <ResponsiveContainer width="100%" height={200} className="md:h-[300px]">
+        <div className="mb-6 md:mb-8">
+          <ResponsiveContainer width="100%" height={160} className="md:h-[300px]">
             <LineChart
               data={readingLogs.map((l) => ({
                 date: l.createdAt
@@ -292,13 +310,13 @@ export default function Dashboard() {
       )}
 
       {/* -----------------------------
-          BOOKS TO START
+          BOOKS TO START (MOBILE FIX)
       ----------------------------- */}
-      <div className="flex gap-4 overflow-x-auto my-6">
+      <div className="flex gap-3 overflow-x-auto my-4 pb-2">
         {toReadBooks.map((book) => (
           <div
             key={book.bookId}
-            className="min-w-[160px] md:min-w-[200px] bg-gray-700 p-3 md:p-4 rounded"
+            className="min-w-[140px] md:min-w-[200px] bg-gray-700 p-3 md:p-4 rounded"
           >
             <p className="font-bold text-sm md:text-base">
               {book.title}
@@ -316,7 +334,7 @@ export default function Dashboard() {
       {/* -----------------------------
           CURRENTLY READING LIST
       ----------------------------- */}
-      <div className="space-y-4">
+      <div className="space-y-3 md:space-y-4">
         {readingLogs
           .filter((log) => log && log.book)
           .map((log) => (
