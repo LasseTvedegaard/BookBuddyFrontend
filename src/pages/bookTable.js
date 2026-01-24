@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { FiMoreHorizontal } from "react-icons/fi";
 import HttpClient from "../services/HttpClient";
 import { endpoints } from "../endpoints";
@@ -15,30 +15,27 @@ const httpClient = new HttpClient(process.env.REACT_APP_API_URL);
 function BookTable() {
   const { currentUser } = useUser();
   const [books, setBooks] = useState([]);
+  const [filteredBooks, setFilteredBooks] = useState([]);
+
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilterUI, setStatusFilterUI] = useState("all");
+  const [genreFilter, setGenreFilter] = useState("all");
+  const [authorFilter, setAuthorFilter] = useState("all");
+
   const [currentPage, setCurrentPage] = useState(1);
   const [booksPerPage] = useState(10);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBookImage, setSelectedBookImage] = useState(null);
+
   const navigate = useNavigate();
-  const location = useLocation();
 
-  const searchParams = new URLSearchParams(location.search);
-  const statusFilter = searchParams.get("status");
-
+  // -----------------------------
+  // FETCH ALL BOOKS (NO FILTERS IN BACKEND)
+  // -----------------------------
   const fetchBooks = useCallback(async () => {
-    let url = `${endpoints.books}`;
-    const params = [];
-
-    if (searchTerm) params.push(`search=${searchTerm}`);
-    if (statusFilter) params.push(`status=${statusFilter}`);
-
-    if (params.length > 0) {
-      url += `?${params.join("&")}`;
-    }
-
     try {
-      const response = await httpClient.get(url);
+      const response = await httpClient.get(endpoints.books);
       if (response && Array.isArray(response)) {
         setBooks(response);
       } else {
@@ -47,12 +44,75 @@ function BookTable() {
     } catch (error) {
       console.error("Error fetching books:", error);
     }
-  }, [searchTerm, statusFilter]);
+  }, []);
 
   useEffect(() => {
     fetchBooks();
-  }, [fetchBooks, statusFilter]);
+  }, [fetchBooks]);
 
+  // -----------------------------
+  // UNIQUE AUTHORS & GENRES FOR DROPDOWNS
+  // -----------------------------
+  const uniqueAuthors = useMemo(() => {
+    const authors = books.map(b => b.author).filter(Boolean);
+    return Array.from(new Set(authors)).sort();
+  }, [books]);
+
+  const uniqueGenres = useMemo(() => {
+    const genres = books
+      .map(b => b.genre?.genreName)
+      .filter(Boolean);
+    return Array.from(new Set(genres)).sort();
+  }, [books]);
+
+  // -----------------------------
+  // FRONTEND FILTERING
+  // -----------------------------
+  useEffect(() => {
+    let result = books;
+
+    // Status filter
+    if (statusFilterUI !== "all") {
+      result = result.filter(b => b.status === statusFilterUI);
+    }
+
+    // Genre filter
+    if (genreFilter !== "all") {
+      result = result.filter(b => b.genre?.genreName === genreFilter);
+    }
+
+    // Author filter
+    if (authorFilter !== "all") {
+      result = result.filter(b => b.author === authorFilter);
+    }
+
+    // Text search (title + author)
+    if (searchTerm.trim() !== "") {
+      const term = searchTerm.toLowerCase();
+      result = result.filter(b =>
+        b.title.toLowerCase().includes(term) ||
+        b.author.toLowerCase().includes(term)
+      );
+    }
+
+    setFilteredBooks(result);
+    setCurrentPage(1); // reset to first page when filters change
+  }, [books, statusFilterUI, genreFilter, authorFilter, searchTerm]);
+
+  // -----------------------------
+  // PAGINATION
+  // -----------------------------
+  const indexOfLastBook = currentPage * booksPerPage;
+  const indexOfFirstBook = indexOfLastBook - booksPerPage;
+  const currentBooks = filteredBooks.slice(indexOfFirstBook, indexOfLastBook);
+
+  const paginate = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  // -----------------------------
+  // HANDLERS
+  // -----------------------------
   const handleDetailsClick = (bookId) => {
     navigate(`/books/${bookId}`);
   };
@@ -65,14 +125,6 @@ function BookTable() {
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedBookImage(null);
-  };
-
-  const indexOfLastBook = currentPage * booksPerPage;
-  const indexOfFirstBook = indexOfLastBook - booksPerPage;
-  const currentBooks = books.slice(indexOfFirstBook, indexOfLastBook);
-
-  const paginate = (pageNumber) => {
-    setCurrentPage(pageNumber);
   };
 
   const handleAddBookClick = () => {
@@ -114,6 +166,16 @@ function BookTable() {
     }
   };
 
+  const clearFilters = () => {
+    setSearchTerm("");
+    setStatusFilterUI("all");
+    setGenreFilter("all");
+    setAuthorFilter("all");
+  };
+
+  // -----------------------------
+  // RENDER
+  // -----------------------------
   return (
     <div className="container mx-auto p-4 bg-ff_background_light dark:bg-ff_background_dark min-h-screen">
 
@@ -126,19 +188,63 @@ function BookTable() {
           <p className="mt-1 text-sm font-normal text-gray-500 dark:text-gray-400">
             A detailed list of all books in BookBuddy along with their respective details.
           </p>
-          {statusFilter && (
-            <p className="text-sm italic text-gray-500 mt-1">
-              Filtered by status: <strong>{statusFilter}</strong>
-            </p>
-          )}
+          <p className="mt-1 text-sm text-gray-500">
+            Showing {filteredBooks.length} of {books.length} books
+          </p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+
           <SearchComponent
             placeholder="Search title or author"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
+
+          {/* STATUS FILTER */}
+          <select
+            value={statusFilterUI}
+            onChange={(e) => setStatusFilterUI(e.target.value)}
+            className="px-3 py-2 rounded-md bg-gray-100 dark:bg-gray-800 text-sm"
+          >
+            <option value="all">All status</option>
+            <option value="unread">Unread</option>
+            <option value="reading">Reading</option>
+            <option value="read">Read</option>
+          </select>
+
+          {/* GENRE FILTER */}
+          <select
+            value={genreFilter}
+            onChange={(e) => setGenreFilter(e.target.value)}
+            className="px-3 py-2 rounded-md bg-gray-100 dark:bg-gray-800 text-sm"
+          >
+            <option value="all">All genres</option>
+            {uniqueGenres.map(g => (
+              <option key={g} value={g}>{g}</option>
+            ))}
+          </select>
+
+          {/* AUTHOR FILTER */}
+          <select
+            value={authorFilter}
+            onChange={(e) => setAuthorFilter(e.target.value)}
+            className="px-3 py-2 rounded-md bg-gray-100 dark:bg-gray-800 text-sm"
+          >
+            <option value="all">All authors</option>
+            {uniqueAuthors.map(a => (
+              <option key={a} value={a}>{a}</option>
+            ))}
+          </select>
+
+          {/* CLEAR FILTERS */}
+          <button
+            onClick={clearFilters}
+            className="px-3 py-2 rounded-md border text-sm"
+          >
+            Clear
+          </button>
+
           <button
             onClick={handleAddBookClick}
             className="px-4 py-2 rounded-md bg-customYellow text-ff_background_dark font-semibold hover:bg-customYellowDark w-full sm:w-auto"
@@ -278,7 +384,7 @@ function BookTable() {
       <div className="flex justify-center mt-6">
         <Pagination
           currentPage={currentPage}
-          totalPages={Math.ceil(books.length / booksPerPage)}
+          totalPages={Math.ceil(filteredBooks.length / booksPerPage)}
           onPageChange={paginate}
         />
       </div>
