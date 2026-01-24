@@ -150,7 +150,7 @@ export default function Dashboard() {
     await httpClient.put(
       `${endpoints.logs}/${logId}`,
       {
-        userId: currentUser.userId,   // 🔑 DENNE MANGLER
+        userId: currentUser.userId,   // 🔑 DENNE SKAL MED
         bookId: bookId,
         currentPage: newPage,
         noOfPages: noOfPages,
@@ -169,6 +169,7 @@ export default function Dashboard() {
     toast.error("Kunne ikke gemme side");
   }
 };
+
 
 
 
