@@ -20,29 +20,29 @@ function CurrentlyReadingBook({ log }) {
   // UPDATE PAGE PROGRESS
   // -----------------------------
   const handlePageUpdate = async () => {
-    if (!currentPage || currentPage < 0) {
-      toast.error("Ugyldigt sidetal");
-      return;
-    }
+  if (!currentPage || currentPage < 0) {
+    toast.error("Ugyldigt sidetal");
+    return;
+  }
 
-    setUpdating(true);
-    try {
-      // 🔑 userId kommer fra JWT – ikke fra frontend
-      await httpClient.post(`${endpoints.logs}`, {
-        bookId: log.book.bookId,
-        currentPage: Number(currentPage),
-        noOfPages: log.noOfPages,
-        listType: "reading",
-      });
+  setUpdating(true);
+  try {
+    await httpClient.put(`${endpoints.logs}/${log.logId}`, {
+      bookId: log.book.bookId,
+      currentPage: Number(currentPage),
+      noOfPages: log.noOfPages,
+      listType: "reading",
+    });
 
-      toast.success("Side gemt!");
-    } catch (error) {
-      console.error("Fejl ved opdatering af sidetal:", error);
-      toast.error("Noget gik galt med sidetallet.");
-    } finally {
-      setUpdating(false);
-    }
-  };
+    toast.success("Side gemt!");
+  } catch (error) {
+    console.error("Fejl ved opdatering af sidetal:", error);
+    toast.error("Noget gik galt med sidetallet.");
+  } finally {
+    setUpdating(false);
+  }
+};
+
 
   // -----------------------------
   // UPDATE STATUS (KORREKT ENDPOINT)
