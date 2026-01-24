@@ -195,81 +195,82 @@ function BookTable() {
 
         <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
 
-          <SearchComponent
-            placeholder="Search title or author"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+  <SearchComponent
+    placeholder="Search title or author"
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+  />
 
-          {/* STATUS FILTER */}
-          <select
-            value={statusFilterUI}
-            onChange={(e) => setStatusFilterUI(e.target.value)}
-            className="px-3 py-2 rounded-md \
-                       bg-gray-100 dark:bg-gray-800 \
-                       text-gray-900 dark:text-white \
-                       border border-gray-300 dark:border-gray-700
-                       text-sm"
-          > setStatusFilterUI(e.target.value)}
-            className="px-3 py-2 rounded-md bg-gray-100 dark:bg-gray-800 text-sm"
-          >
-            <option value="all">All status</option>
-            <option value="unread">Unread</option>
-            <option value="reading">Reading</option>
-            <option value="read">Read</option>
-          </select>
+  {/* STATUS */}
+  <select
+    value={statusFilterUI}
+    onChange={(e) => setStatusFilterUI(e.target.value)}
+    className="h-10 px-3 rounded-md 
+               bg-gray-100 dark:bg-gray-800 
+               text-gray-900 dark:text-white 
+               border border-gray-300 dark:border-gray-700
+               text-sm"
+  >
+    <option value="all">All status</option>
+    <option value="unread">Unread</option>
+    <option value="reading">Reading</option>
+    <option value="read">Read</option>
+  </select>
 
-          {/* GENRE FILTER */}
-          <select
-            value={genreFilter}
-            onChange={(e) => setGenreFilter(e.target.value)}
-            className="px-3 py-2 rounded-md \
-                       bg-gray-100 dark:bg-gray-800 \
-                       text-gray-900 dark:text-white \
-                       border border-gray-300 dark:border-gray-700
-                       text-sm"
-          > setGenreFilter(e.target.value)}
-            className="px-3 py-2 rounded-md bg-gray-100 dark:bg-gray-800 text-sm"
-          >
-            <option value="all">All genres</option>
-            {uniqueGenres.map(g => (
-              <option key={g} value={g}>{g}</option>
-            ))}
-          </select>
+  {/* GENRE */}
+  <select
+    value={genreFilter}
+    onChange={(e) => setGenreFilter(e.target.value)}
+    className="h-10 px-3 rounded-md 
+               bg-gray-100 dark:bg-gray-800 
+               text-gray-900 dark:text-white 
+               border border-gray-300 dark:border-gray-700
+               text-sm"
+  >
+    <option value="all">All genres</option>
+    {uniqueGenres.map(g => (
+      <option key={g} value={g}>{g}</option>
+    ))}
+  </select>
 
-          {/* AUTHOR FILTER */}
-          <select
-            value={authorFilter}
-            onChange={(e) => setAuthorFilter(e.target.value)}
-            className="px-3 py-2 rounded-md \
-                       bg-gray-100 dark:bg-gray-800 \
-                       text-gray-900 dark:text-white \
-                       border border-gray-300 dark:border-gray-700
-                       text-sm"
-          > setAuthorFilter(e.target.value)}
-            className="px-3 py-2 rounded-md bg-gray-100 dark:bg-gray-800 text-sm"
-          >
-            <option value="all">All authors</option>
-            {uniqueAuthors.map(a => (
-              <option key={a} value={a}>{a}</option>
-            ))}
-          </select>
+  {/* AUTHOR */}
+  <select
+    value={authorFilter}
+    onChange={(e) => setAuthorFilter(e.target.value)}
+    className="h-10 px-3 rounded-md 
+               bg-gray-100 dark:bg-gray-800 
+               text-gray-900 dark:text-white 
+               border border-gray-300 dark:border-gray-700
+               text-sm"
+  >
+    <option value="all">All authors</option>
+    {uniqueAuthors.map(a => (
+      <option key={a} value={a}>{a}</option>
+    ))}
+  </select>
 
-          {/* CLEAR FILTERS */}
-          <button
-            onClick={clearFilters}
-            className="px-3 py-2 rounded-md border text-sm"
-          >
-            Clear
-          </button>
+  {/* CLEAR */}
+  <button
+    onClick={clearFilters}
+    className="h-10 px-3 rounded-md 
+               bg-gray-100 dark:bg-gray-800 
+               text-gray-900 dark:text-white 
+               border border-gray-300 dark:border-gray-700
+               text-sm
+               hover:bg-gray-200 dark:hover:bg-gray-700"
+  >
+    Clear
+  </button>
 
-          <button
-            onClick={handleAddBookClick}
-            className="px-4 py-2 rounded-md bg-customYellow text-ff_background_dark font-semibold hover:bg-customYellowDark w-full sm:w-auto"
-          >
-            Add new book
-          </button>
-        </div>
+  <button
+    onClick={handleAddBookClick}
+    className="h-10 px-4 rounded-md 
+               bg-customYellow text-ff_background_dark 
+               font-semibold hover:bg-customYellowDark"
+  >
+    Add new book
+  </button>
+</div>
       </div>
 
       {/* -----------------------------
