@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { toast } from "react-toastify";
 
-function CurrentlyReadingBook({ log, onUpdateProgress }) {   // 🔑 tilføj prop
+function CurrentlyReadingBook({ log, onUpdateProgress }) {
   const [currentPage, setCurrentPage] = useState(log?.currentPage ?? 0);
   const [status, setStatus] = useState(log?.book?.status ?? "reading");
   const [updating, setUpdating] = useState(false);
@@ -21,7 +21,6 @@ function CurrentlyReadingBook({ log, onUpdateProgress }) {   // 🔑 tilføj pro
 
     setUpdating(true);
     try {
-      // 🔑 I STEDET FOR EGET httpClient.put
       await onUpdateProgress(
         log.logId,
         Number(currentPage),
@@ -40,11 +39,10 @@ function CurrentlyReadingBook({ log, onUpdateProgress }) {   // 🔑 tilføj pro
   };
 
   // -----------------------------
-  // UPDATE STATUS (UÆNDRET)
+  // UPDATE STATUS
   // -----------------------------
   const handleStatusChange = async (newStatus) => {
     try {
-      // DENNE må gerne blive her – det er et andet endpoint
       const httpClient = new (require("../services/HttpClient").default)(
         process.env.REACT_APP_API_URL
       );
@@ -93,26 +91,36 @@ function CurrentlyReadingBook({ log, onUpdateProgress }) {   // 🔑 tilføj pro
           max={log.noOfPages}
           value={currentPage}
           onChange={(e) => setCurrentPage(e.target.value)}
-          className="text-black px-2 py-1"
+          className="h-10 w-24 px-3 rounded-md 
+                     text-gray-900 
+                     border border-gray-300 dark:border-gray-700"
         />
 
         <button
           onClick={handlePageUpdate}
-          className="px-3 py-1 bg-yellow-500 rounded hover:bg-yellow-600 disabled:opacity-50"
+          className="h-10 px-4 bg-yellow-500 text-black rounded-md 
+                     hover:bg-yellow-600 disabled:opacity-50"
           disabled={updating}
         >
           {updating ? "Opdaterer..." : "Gem side"}
         </button>
       </div>
 
-      {/* Update status (uændret UI) */}
-      <div className="mt-3">
-        <label htmlFor="status">Status: </label>
+      {/* Update status */}
+      <div className="mt-3 flex items-center">
+        <label htmlFor="status" className="mr-2">
+          Status:
+        </label>
+
         <select
           id="status"
           value={status}
           onChange={(e) => handleStatusChange(e.target.value)}
-          className="text-black px-2 py-1 ml-2"
+          className="h-10 w-32 pl-3 pr-8 rounded-md
+                     bg-gray-100 dark:bg-gray-800
+                     text-gray-900 dark:text-white
+                     border border-gray-300 dark:border-gray-700
+                     text-sm"
         >
           <option value="reading">Reading</option>
           <option value="read">Read</option>
