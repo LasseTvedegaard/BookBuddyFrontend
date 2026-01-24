@@ -205,6 +205,12 @@ function BookTable() {
           <select
             value={statusFilterUI}
             onChange={(e) => setStatusFilterUI(e.target.value)}
+            className="px-3 py-2 rounded-md \
+                       bg-gray-100 dark:bg-gray-800 \
+                       text-gray-900 dark:text-white \
+                       border border-gray-300 dark:border-gray-700
+                       text-sm"
+          > setStatusFilterUI(e.target.value)}
             className="px-3 py-2 rounded-md bg-gray-100 dark:bg-gray-800 text-sm"
           >
             <option value="all">All status</option>
@@ -217,6 +223,12 @@ function BookTable() {
           <select
             value={genreFilter}
             onChange={(e) => setGenreFilter(e.target.value)}
+            className="px-3 py-2 rounded-md \
+                       bg-gray-100 dark:bg-gray-800 \
+                       text-gray-900 dark:text-white \
+                       border border-gray-300 dark:border-gray-700
+                       text-sm"
+          > setGenreFilter(e.target.value)}
             className="px-3 py-2 rounded-md bg-gray-100 dark:bg-gray-800 text-sm"
           >
             <option value="all">All genres</option>
@@ -229,6 +241,12 @@ function BookTable() {
           <select
             value={authorFilter}
             onChange={(e) => setAuthorFilter(e.target.value)}
+            className="px-3 py-2 rounded-md \
+                       bg-gray-100 dark:bg-gray-800 \
+                       text-gray-900 dark:text-white \
+                       border border-gray-300 dark:border-gray-700
+                       text-sm"
+          > setAuthorFilter(e.target.value)}
             className="px-3 py-2 rounded-md bg-gray-100 dark:bg-gray-800 text-sm"
           >
             <option value="all">All authors</option>
