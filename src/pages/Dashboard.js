@@ -145,58 +145,48 @@ export default function Dashboard() {
   // -----------------------------
   // UPDATE PAGE PROGRESS (UI only)
   // -----------------------------
-  const updatePageProgress = async (logId, newPage, bookId, noOfPages, listType, token) => {
-  try {
-    const response = await fetch(
-      `${API_BASE_URL}/api/log/${logId}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({
+  const updatePageProgress = async (logId, newPage, bookId, noOfPages, listType) => {
+    try {
+      await httpClient.put(
+        `${endpoints.logs}/${logId}`,
+        {
           bookId: bookId,
           currentPage: newPage,
           noOfPages: noOfPages,
-          listType: listType
-        })
-      }
-    );
+          listType: listType,
+        }
+      );
 
-    if (!response.ok) {
-      throw new Error(`Failed to update log: ${response.status}`);
-    }
+      // 🔹 Opdatér UI først når backend er OK
+      setReadingLogs((prev) =>
+        prev.map((log) =>
+          log.logId === logId ? { ...log, currentPage: newPage } : log
+        )
+      );
 
-    // 🔹 Opdatér UI først når backend er OK
-    setReadingLogs((prev) =>
-      prev.map((log) =>
-        log.logId === logId ? { ...log, currentPage: newPage } : log
-      )
-    );
-
-  } catch (err) {
-    console.error("Failed to update page progress", err);
-    alert("Kunne ikke gemme side");
-  }
-};
-
-  // -----------------------------
-  // START READING
-  // -----------------------------
-  const handleStartReading = async (book) => {
-    try {
-      await startReading(book);
-      await Promise.all([
-        fetchLogs(),
-        fetchCounts(),
-        fetchToReadBooks(),
-      ]);
-    } catch (error) {
-      console.error("Error starting reading:", error);
-      toast.error("Kunne ikke starte læsning.");
+    } catch (err) {
+      console.error("Failed to update page progress", err);
+      toast.error("Kunne ikke gemme side");
     }
   };
+
+
+    // -----------------------------
+    // START READING
+    // -----------------------------
+    const handleStartReading = async (book) => {
+      try {
+        await startReading(book);
+        await Promise.all([
+          fetchLogs(),
+          fetchCounts(),
+          fetchToReadBooks(),
+        ]);
+      } catch (error) {
+        console.error("Error starting reading:", error);
+        toast.error("Kunne ikke starte læsning.");
+      }
+    };
 
   // -----------------------------
   // RENDER
