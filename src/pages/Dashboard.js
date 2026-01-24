@@ -146,29 +146,30 @@ export default function Dashboard() {
   // UPDATE PAGE PROGRESS (UI only)
   // -----------------------------
   const updatePageProgress = async (logId, newPage, bookId, noOfPages, listType) => {
-    try {
-      await httpClient.put(
-        `${endpoints.logs}/${logId}`,
-        {
-          bookId: bookId,
-          currentPage: newPage,
-          noOfPages: noOfPages,
-          listType: listType,
-        }
-      );
+  try {
+    await httpClient.put(
+      `${endpoints.logs}/${logId}`,
+      {
+        userId: currentUser.userId,   // 🔑 DENNE MANGLER
+        bookId: bookId,
+        currentPage: newPage,
+        noOfPages: noOfPages,
+        listType: listType,
+      }
+    );
 
-      // 🔹 Opdatér UI først når backend er OK
-      setReadingLogs((prev) =>
-        prev.map((log) =>
-          log.logId === logId ? { ...log, currentPage: newPage } : log
-        )
-      );
+    setReadingLogs((prev) =>
+      prev.map((log) =>
+        log.logId === logId ? { ...log, currentPage: newPage } : log
+      )
+    );
 
-    } catch (err) {
-      console.error("Failed to update page progress", err);
-      toast.error("Kunne ikke gemme side");
-    }
-  };
+  } catch (err) {
+    console.error("Failed to update page progress", err);
+    toast.error("Kunne ikke gemme side");
+  }
+};
+
 
 
     // -----------------------------
