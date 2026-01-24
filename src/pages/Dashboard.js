@@ -151,10 +151,10 @@ export default function Dashboard() {
     try {
       await httpClient.put(`${endpoints.logs}/${logId}`, {
         userId: currentUser.userId,
-        bookId: bookId,
+        bookId,
         currentPage: newPage,
-        noOfPages: noOfPages,
-        listType: listType,
+        noOfPages,
+        listType,
       });
 
       setReadingLogs((prev) =>
@@ -189,15 +189,15 @@ export default function Dashboard() {
   // RENDER
   // -----------------------------
   return (
-    <div className="px-4 md:px-8 lg:px-12 py-4 md:py-6 max-w-6xl mx-auto text-ff_text_light">
+    <div className="px-3 md:px-8 lg:px-12 py-3 md:py-6 max-w-6xl mx-auto text-ff_text_light">
 
       {/* TITLE */}
-      <h1 className="text-2xl md:text-3xl font-semibold mb-4 md:mb-6">
+      <h1 className="text-xl md:text-3xl font-semibold mb-4 md:mb-6">
         Velkommen, {currentUser?.firstName || "læser"} 👋
       </h1>
 
       {/* -----------------------------
-          STAT CARDS (MOBILE FIX)
+          STAT CARDS (RESPONSIVE GRID)
       ----------------------------- */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-6">
         <div
@@ -239,14 +239,13 @@ export default function Dashboard() {
       </div>
 
       {/* -----------------------------
-          CONTINUE READING (MOBILE FIX)
+          CONTINUE READING
       ----------------------------- */}
       {latestLog && (
         <div className="bg-gray-800 rounded-lg 
                         p-3 md:p-5 
                         mb-6 
-                        border border-gray-700 
-                        max-w-full">
+                        border border-gray-700">
           <h2 className="text-lg md:text-xl font-semibold mb-1">
             Continue reading
           </h2>
@@ -286,11 +285,11 @@ export default function Dashboard() {
       )}
 
       {/* -----------------------------
-          READING GRAPH (SMALLER ON MOBILE)
+          READING GRAPH (WITH MOBILE HEIGHT)
       ----------------------------- */}
       {readingLogs.length > 0 && (
         <div className="mb-6 md:mb-8">
-          <ResponsiveContainer width="100%" height={160} className="md:h-[300px]">
+          <ResponsiveContainer width="100%" height={200} className="md:h-[300px]">
             <LineChart
               data={readingLogs.map((l) => ({
                 date: l.createdAt
@@ -310,7 +309,7 @@ export default function Dashboard() {
       )}
 
       {/* -----------------------------
-          BOOKS TO START (MOBILE FIX)
+          BOOKS TO START
       ----------------------------- */}
       <div className="flex gap-3 overflow-x-auto my-4 pb-2">
         {toReadBooks.map((book) => (
