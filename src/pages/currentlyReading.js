@@ -1,56 +1,56 @@
 import React, { useState } from "react";
 import { toast } from "react-toastify";
-import HttpClient from "../services/HttpClient";
-import { endpoints } from "../endpoints";
 
-function CurrentlyReadingBook({ log }) {
-  // 🔒 Hooks først – altid
+function CurrentlyReadingBook({ log, onUpdateProgress }) {   // 🔑 tilføj prop
   const [currentPage, setCurrentPage] = useState(log?.currentPage ?? 0);
   const [status, setStatus] = useState(log?.book?.status ?? "reading");
   const [updating, setUpdating] = useState(false);
 
-  // 🔒 Early return efter hooks
   if (!log || !log.book) {
     return null;
   }
-
-  const httpClient = new HttpClient(process.env.REACT_APP_API_URL);
 
   // -----------------------------
   // UPDATE PAGE PROGRESS
   // -----------------------------
   const handlePageUpdate = async () => {
-  if (!currentPage || currentPage < 0) {
-    toast.error("Ugyldigt sidetal");
-    return;
-  }
+    if (!currentPage || currentPage < 0) {
+      toast.error("Ugyldigt sidetal");
+      return;
+    }
 
-  setUpdating(true);
-  try {
-    await httpClient.put(`${endpoints.logs}/${log.logId}`, {
-      bookId: log.book.bookId,
-      currentPage: Number(currentPage),
-      noOfPages: log.noOfPages,
-      listType: "reading",
-    });
+    setUpdating(true);
+    try {
+      // 🔑 I STEDET FOR EGET httpClient.put
+      await onUpdateProgress(
+        log.logId,
+        Number(currentPage),
+        log.book.bookId,
+        log.noOfPages,
+        "reading"
+      );
 
-    toast.success("Side gemt!");
-  } catch (error) {
-    console.error("Fejl ved opdatering af sidetal:", error);
-    toast.error("Noget gik galt med sidetallet.");
-  } finally {
-    setUpdating(false);
-  }
-};
-
+      toast.success("Side gemt!");
+    } catch (error) {
+      console.error("Fejl ved opdatering af sidetal:", error);
+      toast.error("Noget gik galt med sidetallet.");
+    } finally {
+      setUpdating(false);
+    }
+  };
 
   // -----------------------------
-  // UPDATE STATUS (KORREKT ENDPOINT)
+  // UPDATE STATUS (UÆNDRET)
   // -----------------------------
   const handleStatusChange = async (newStatus) => {
     try {
+      // DENNE må gerne blive her – det er et andet endpoint
+      const httpClient = new (require("../services/HttpClient").default)(
+        process.env.REACT_APP_API_URL
+      );
+
       await httpClient.put(
-        `${endpoints.books}/${log.book.bookId}/status`,
+        `${require("../endpoints").endpoints.books}/${log.book.bookId}/status`,
         { status: newStatus }
       );
 
@@ -105,7 +105,7 @@ function CurrentlyReadingBook({ log }) {
         </button>
       </div>
 
-      {/* Update status */}
+      {/* Update status (uændret UI) */}
       <div className="mt-3">
         <label htmlFor="status">Status: </label>
         <select

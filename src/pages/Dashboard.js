@@ -150,7 +150,7 @@ export default function Dashboard() {
     await httpClient.put(
       `${endpoints.logs}/${logId}`,
       {
-        userId: currentUser.userId,   // 🔑 DENNE SKAL MED
+        userId: currentUser.userId,   
         bookId: bookId,
         currentPage: newPage,
         noOfPages: noOfPages,
