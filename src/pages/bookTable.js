@@ -205,7 +205,7 @@ function BookTable() {
   <select
     value={statusFilterUI}
     onChange={(e) => setStatusFilterUI(e.target.value)}
-    className="h-10 px-3 rounded-md 
+    className="h-10 w-32 pl-3 pr-8 rounded-md 
                bg-gray-100 dark:bg-gray-800 
                text-gray-900 dark:text-white 
                border border-gray-300 dark:border-gray-700
@@ -221,7 +221,7 @@ function BookTable() {
   <select
     value={genreFilter}
     onChange={(e) => setGenreFilter(e.target.value)}
-    className="h-10 px-3 rounded-md 
+    className="h-10 w-36 pl-3 pr-8 rounded-md 
                bg-gray-100 dark:bg-gray-800 
                text-gray-900 dark:text-white 
                border border-gray-300 dark:border-gray-700
@@ -237,7 +237,7 @@ function BookTable() {
   <select
     value={authorFilter}
     onChange={(e) => setAuthorFilter(e.target.value)}
-    className="h-10 px-3 rounded-md 
+    className="h-10 w-44 pl-3 pr-8 rounded-md 
                bg-gray-100 dark:bg-gray-800 
                text-gray-900 dark:text-white 
                border border-gray-300 dark:border-gray-700
