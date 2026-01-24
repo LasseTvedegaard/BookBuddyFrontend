@@ -145,13 +145,41 @@ export default function Dashboard() {
   // -----------------------------
   // UPDATE PAGE PROGRESS (UI only)
   // -----------------------------
-  const updatePageProgress = (logId, newPage) => {
+  const updatePageProgress = async (logId, newPage, bookId, noOfPages, listType, token) => {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/api/log/${logId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          bookId: bookId,
+          currentPage: newPage,
+          noOfPages: noOfPages,
+          listType: listType
+        })
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to update log: ${response.status}`);
+    }
+
+    // 🔹 Opdatér UI først når backend er OK
     setReadingLogs((prev) =>
       prev.map((log) =>
         log.logId === logId ? { ...log, currentPage: newPage } : log
       )
     );
-  };
+
+  } catch (err) {
+    console.error("Failed to update page progress", err);
+    alert("Kunne ikke gemme side");
+  }
+};
 
   // -----------------------------
   // START READING
