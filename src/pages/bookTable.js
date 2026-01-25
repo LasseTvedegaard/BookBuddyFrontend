@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { FiMoreHorizontal } from "react-icons/fi";
 import HttpClient from "../services/HttpClient";
 import { endpoints } from "../endpoints";
@@ -14,10 +14,12 @@ const httpClient = new HttpClient(process.env.REACT_APP_API_URL);
 
 function BookTable() {
   const { currentUser } = useUser();
+  const navigate = useNavigate();
+  const location = useLocation(); // 🔑 NY
 
   const [books, setBooks] = useState([]);
   const [filteredBooks, setFilteredBooks] = useState([]);
-  const [loading, setLoading] = useState(true); // 🔑 LOADING STATE
+  const [loading, setLoading] = useState(true);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilterUI, setStatusFilterUI] = useState("all");
@@ -30,10 +32,25 @@ function BookTable() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBookImage, setSelectedBookImage] = useState(null);
 
-  const navigate = useNavigate();
+  // -----------------------------
+  // 🔑 LÆS STATUS FRA URL (?status=read|reading|unread)
+  // -----------------------------
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const statusFromUrl = params.get("status");
+
+    if (
+      statusFromUrl &&
+      ["read", "reading", "unread"].includes(statusFromUrl)
+    ) {
+      setStatusFilterUI(statusFromUrl);
+    } else {
+      setStatusFilterUI("all");
+    }
+  }, [location.search]);
 
   // -----------------------------
-  // FETCH ALL BOOKS (NO FILTERS IN BACKEND)
+  // FETCH ALL BOOKS
   // -----------------------------
   const fetchBooks = useCallback(async () => {
     setLoading(true);
@@ -56,7 +73,7 @@ function BookTable() {
   }, [fetchBooks]);
 
   // -----------------------------
-  // UNIQUE AUTHORS & GENRES FOR DROPDOWNS
+  // UNIQUE AUTHORS & GENRES
   // -----------------------------
   const uniqueAuthors = useMemo(() => {
     const authors = books.map((b) => b.author).filter(Boolean);
@@ -168,6 +185,7 @@ function BookTable() {
     setStatusFilterUI("all");
     setGenreFilter("all");
     setAuthorFilter("all");
+    navigate("/books"); // 🔑 ryd også URL
   };
 
   // -----------------------------
@@ -275,7 +293,7 @@ function BookTable() {
         </div>
       </div>
 
-      {/* LOADING STATE */}
+      {/* LOADING */}
       {loading && (
         <div className="flex justify-center items-center py-20">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-300 border-t-customYellow"></div>
@@ -285,7 +303,7 @@ function BookTable() {
       {/* CONTENT */}
       {!loading && (
         <>
-          {/* MOBILE VIEW */}
+          {/* MOBILE */}
           <div className="block md:hidden space-y-4">
             {currentBooks.length > 0 ? (
               currentBooks.map((book) => (
@@ -341,7 +359,7 @@ function BookTable() {
             )}
           </div>
 
-          {/* DESKTOP VIEW */}
+          {/* DESKTOP */}
           <div className="hidden md:block">
             <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
               <thead className="text-s text-gray-700 uppercase bg-gray-50 dark:bg-ff_bg_sidebar_dark dark:text-gray-400">
