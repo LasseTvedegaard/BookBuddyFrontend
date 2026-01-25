@@ -32,6 +32,9 @@ export default function Dashboard() {
   const [readingLogs, setReadingLogs] = useState([]);
   const [toReadBooks, setToReadBooks] = useState([]);
 
+  // 🔑 NY: Kun 3 foreslåede bøger
+  const [suggestedBooks, setSuggestedBooks] = useState([]);
+
   // -----------------------------
   // FETCH COUNTS
   // -----------------------------
@@ -52,12 +55,21 @@ export default function Dashboard() {
   }, [httpClient]);
 
   // -----------------------------
-  // FETCH UNREAD BOOKS
+  // FETCH UNREAD BOOKS + VÆLG 3 TILFÆLDIGE
   // -----------------------------
   const fetchToReadBooks = useCallback(async () => {
     try {
       const books = await httpClient.get(`${endpoints.books}?status=unread`);
       setToReadBooks(books);
+
+      // 🔑 Vælg max 3 tilfældige bøger til forslag
+      if (books && books.length > 0) {
+        const shuffled = [...books].sort(() => 0.5 - Math.random());
+        const selected = shuffled.slice(0, 3);
+        setSuggestedBooks(selected);
+      } else {
+        setSuggestedBooks([]);
+      }
     } catch (error) {
       console.error("Error fetching unread books:", error);
     }
@@ -177,7 +189,7 @@ export default function Dashboard() {
       await Promise.all([
         fetchLogs(),
         fetchCounts(),
-        fetchToReadBooks(),
+        fetchToReadBooks(), // 🔑 opdater også forslag efter start
       ]);
     } catch (error) {
       console.error("Error starting reading:", error);
@@ -313,26 +325,56 @@ export default function Dashboard() {
       )}
 
       {/* -----------------------------
-          BOOKS TO START
+          BOOK SUGGESTIONS (MAX 3 CARDS)
       ----------------------------- */}
-      <div className="flex gap-3 overflow-x-auto my-4 pb-2 w-full">
-        {toReadBooks.map((book) => (
-          <div
-            key={book.bookId}
-            className="w-full md:min-w-[200px] bg-gray-700 p-3 md:p-4 rounded flex-shrink-0"
-          >
-            <p className="font-bold text-sm md:text-base">
-              {book.title}
-            </p>
-            <button
-              onClick={() => handleStartReading(book)}
-              className="mt-2 w-full md:w-auto bg-blue-500 px-3 py-2 rounded"
-            >
-              Start
-            </button>
+      {suggestedBooks.length > 0 && (
+        <div className="mb-8">
+          <h2 className="text-lg md:text-xl font-semibold mb-3">
+            Suggested books to start
+          </h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {suggestedBooks.map((book) => (
+              <div
+                key={book.bookId}
+                className="bg-gray-800 rounded-lg 
+                           border border-gray-700 
+                           p-3 
+                           flex flex-col 
+                           hover:border-yellow-500 transition"
+              >
+                {/* Book image */}
+                <div className="flex justify-center mb-3">
+                  <img
+                    src={book.imageURL || ""}
+                    alt={book.title}
+                    className="h-40 w-28 object-cover rounded shadow"
+                  />
+                </div>
+
+                {/* Title */}
+                <p className="font-semibold text-sm md:text-base text-center mb-3">
+                  {book.title}
+                </p>
+
+                {/* Start button */}
+                <button
+                  onClick={() => handleStartReading(book)}
+                  className="mt-auto 
+                             w-full 
+                             bg-blue-600 hover:bg-blue-700 
+                             text-white 
+                             px-3 py-2 
+                             rounded 
+                             font-medium"
+                >
+                  Start reading
+                </button>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      )}
 
       {/* -----------------------------
           CURRENTLY READING LIST
