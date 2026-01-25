@@ -375,20 +375,31 @@ export default function Dashboard() {
       )}
 
       {/* -----------------------------
-          CURRENTLY READING LIST
-      ----------------------------- */}
-      <div className="space-y-3 md:space-y-4 w-full">
-        {readingLogs
-          .filter((log) => log && log.book)
-          .map((log) => (
-            <CurrentlyReadingBook
-              key={log.logId}
-              log={log}
-              onUpdateProgress={updatePageProgress}
-              onStatusChange={() => markAsRead(log.logId)}
-            />
-          ))}
-      </div>
+    CURRENTLY READING LIST
+----------------------------- */}
+      {readingLogs.length > 0 && (
+        <div className="mt-2">
+          <h2 className="text-lg md:text-xl font-semibold mb-3">
+            Currently reading
+          </h2>
+
+          <div className="space-y-3 md:space-y-4 w-full">
+            {readingLogs
+              .filter((log) => log && log.book)
+              .map((log) => (
+                <CurrentlyReadingBook
+                  key={log.logId}
+                  log={log}
+                  onUpdateProgress={updatePageProgress}
+                  onStatusChange={() => markAsRead(log.logId)}
+                />
+              ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
+
+
