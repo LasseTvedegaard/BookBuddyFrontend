@@ -30,9 +30,8 @@ export default function Dashboard() {
   const [currentlyReadingCount, setCurrentlyReadingCount] = useState(0);
   const [booksToReadCount, setBooksToReadCount] = useState(0);
   const [readingLogs, setReadingLogs] = useState([]);
-  const [toReadBooks, setToReadBooks] = useState([]);
 
-  // 🔑 NY: Kun 3 foreslåede bøger
+  // 🔑 Kun 3 foreslåede bøger (ingen toReadBooks længere)
   const [suggestedBooks, setSuggestedBooks] = useState([]);
 
   // -----------------------------
@@ -60,7 +59,6 @@ export default function Dashboard() {
   const fetchToReadBooks = useCallback(async () => {
     try {
       const books = await httpClient.get(`${endpoints.books}?status=unread`);
-      setToReadBooks(books);
 
       // 🔑 Vælg max 3 tilfældige bøger til forslag
       if (books && books.length > 0) {
