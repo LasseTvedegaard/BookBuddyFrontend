@@ -7,7 +7,7 @@ import BookTable from './pages/bookTable.js';
 import Dashboard from './pages/Dashboard.js';
 import AddBookPage from './pages/AddBookPage.js';
 import CurrentlyReadingBooks from './pages/currentlyReading.js';
-import BookDetailsPage from './pages/bookDetails.js'; // ✅ korrekt import
+import BookDetailsPage from './pages/bookDetails.js'; 
 
 import Layout from './components/Layout.js';
 import { ThemeProvider } from './components/Theme/ThemeContext.js';
@@ -59,7 +59,7 @@ function App() {
               }
             />
 
-            {/* ✅ New route for book details */}
+            {/* New route for book details */}
             <Route
               path="/books/:id"
               element={

@@ -33,7 +33,7 @@ function BookTable() {
   const [selectedBookImage, setSelectedBookImage] = useState(null);
 
   // -----------------------------
-  // 🔑 LÆS STATUS FRA URL (?status=read|reading|unread)
+  // LÆS STATUS FRA URL (?status=read|reading|unread)
   // -----------------------------
   useEffect(() => {
     const params = new URLSearchParams(location.search);
